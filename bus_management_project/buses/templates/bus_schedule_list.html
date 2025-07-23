@@ -1,61 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>University Bus Schedules</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        h1 { color: #0056b3; text-align: center; }
-        .schedule-container { background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 20px; }
-        .route-header { background-color: #e2eafc; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-        .route-header h2 { margin: 0; color: #333; }
-        .schedule-item { border-bottom: 1px solid #eee; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
-        .schedule-item:last-child { border-bottom: none; }
-        .time { font-weight: bold; color: #007bff; }
-        .type { font-size: 0.85em; background-color: #007bff; color: white; padding: 3px 8px; border-radius: 4px; }
-        .note { font-size: 0.8em; color: #666; margin-top: 5px; }
-        .no-schedules { text-align: center; color: #888; padding: 20px; }
-        .current-time-display { text-align: right; font-size: 0.9em; color: #666; margin-bottom: 10px; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+      h1 {
+        color: #0056b3;
+        text-align: center;
+      }
+      .schedule-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+      }
+      .route-header {
+        background-color: #e2eafc;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      .route-header h2 {
+        margin: 0;
+        color: #333;
+      }
+      .schedule-item {
+        border-bottom: 1px solid #eee;
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .schedule-item:last-child {
+        border-bottom: none;
+      }
+      .time {
+        font-weight: bold;
+        color: #007bff;
+      }
+      .type {
+        font-size: 0.85em;
+        background-color: #007bff;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+      .note {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 5px;
+      }
+      .no-schedules {
+        text-align: center;
+        color: #888;
+        padding: 20px;
+      }
+      .current-time-display {
+        text-align: right;
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>University Bus Schedules</h1>
+    <p
+      style="
+        text-align: center;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #007bff;
+      "
+    >
+      Currently Showing: {{ active_schedule_type_display }}
+    </p>
     <div class="current-time-display">
-        Current Server Time (Dhaka): {{ current_time|date:"F d, Y P" }}
+      Current Server Time (Dhaka): {{ current_time|date:"F d, Y P - H:i:s" }}
+    </div>
+    <div class="current-time-display">
+      Current Server Time (Dhaka): {{ current_time|date:"F d, Y P" }}
     </div>
 
-    {% if routes %}
-        {% for route in routes %}
-            <div class="schedule-container">
-                <div class="route-header">
-                    <h2>Bus {{ route.bus_number }} - {{ route.destination }}</h2>
-                    {% if route.description %}
-                        <p style="font-size: 0.9em; color: #555;">{{ route.description }}</p>
-                    {% endif %}
-                </div>
-                {% if route.schedules.all %}
-                    {% for schedule in route.schedules.all %}
-                        <div class="schedule-item">
-                            <div>
-                                <span class="time">{{ schedule.departure_time|time:"h:i A" }}</span>
-                                {% if schedule.arrival_time %}
-                                    - <span class="time">{{ schedule.arrival_time|time:"h:i A" }}</span>
-                                {% endif %}
-                                <span class="type">{{ schedule.get_route_type_display }}</span>
-                            </div>
-                            {% if schedule.notes %}
-                                <div class="note">{{ schedule.notes }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="no-schedules">No schedules available for this route yet.</p>
-                {% endif %}
-            </div>
-        {% endfor %}
-    {% else %}
-        <p class="no-schedules">No bus routes defined yet. Please add them via the <a href="/admin/">admin panel</a>.</p>
+    {% if routes %} {% for route in routes %}
+    <div class="schedule-container">
+      <div class="route-header">
+        <h2>Bus {{ route.bus_number }} - {{ route.destination }}</h2>
+        {% if route.description %}
+        <p style="font-size: 0.9em; color: #555">{{ route.description }}</p>
+        {% endif %}
+      </div>
+      {% if route.schedules.all %} {% for schedule in route.schedules.all %}
+      <div class="schedule-item">
+        <div>
+          <span class="time">{{ schedule.departure_time|time:"h:i A" }}</span>
+          {% if schedule.arrival_time %} -
+          <span class="time">{{ schedule.arrival_time|time:"h:i A" }}</span>
+          {% endif %}
+          <span class="type">{{ schedule.get_route_type_display }}</span>
+        </div>
+        {% if schedule.notes %}
+        <div class="note">{{ schedule.notes }}</div>
+        {% endif %}
+      </div>
+      {% endfor %} {% else %}
+      <p class="no-schedules">No schedules available for this route yet.</p>
+      {% endif %}
+    </div>
+    {% endfor %} {% else %}
+    <p class="no-schedules">
+      No bus routes defined yet. Please add them via the
+      <a href="/admin/">admin panel</a>.
+    </p>
     {% endif %}
-</body>
+  </body>
 </html>

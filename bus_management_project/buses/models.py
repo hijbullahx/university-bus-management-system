@@ -39,3 +39,17 @@ class BusSchedule(models.Model):
         # Ensures that for a given route and type, a departure time is unique
         unique_together = ('route', 'departure_time', 'route_type')
         ordering = ['route__bus_number', 'departure_time']
+
+class GlobalSettings(models.Model):
+    active_route_type = models.CharField(
+        max_length=10,
+        choices=BusSchedule.ROUTE_TYPE_CHOICES,
+        default='REGULAR',
+        help_text="Set the globally active schedule type (e.g., REGULAR, EXAM). Only schedules of this type will be primarily displayed."
+    )
+    # We'll ensure only one instance of this model exists
+    class Meta:
+        verbose_name_plural = "Global Settings"
+
+    def __str__(self):
+        return f"Active Schedule: {self.get_active_route_type_display()}"
