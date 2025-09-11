@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="custom-admin-dashboard">
-  <h1>Edit Route: {{ route.bus_number }} - {{ route.destination }}</h1>
+  <h1>Edit Route: {{ route.bus_number }} - {{ route.route }}</h1>
   <form method="post" class="route-form">
     {% csrf_token %}
     <div class="form-section">
@@ -18,6 +18,13 @@
           </div>
         {% endfor %}
       </div>
+      <!-- Hidden empty form template for JS cloning -->
+      <div id="empty-stopage-form" style="display:none;">
+        <div class="stopage-form">
+          {{ formset.empty_form.as_p|safe }}
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary" id="add-stopage-btn">+ Add Stopage</button>
     </div>
     <button type="submit" class="btn">Save Changes</button>
     <a href="{% url 'buses:custom_admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
@@ -48,5 +55,62 @@
   margin-bottom: 12px;
   background: #fff;
 }
+  #add-stopage-btn {
+    margin-top: 8px;
+    margin-bottom: 0;
+    background: #bfa100;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #add-stopage-btn:hover {
+    background: #a88c00;
+  }
 </style>
+<script>
+// Robust dynamic formset: clone hidden empty form, update names/ids, clear values, update TOTAL_FORMS
+document.addEventListener('DOMContentLoaded', function() {
+  const addBtn = document.getElementById('add-stopage-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', function() {
+      const stopagesList = document.getElementById('stopages-list');
+      const totalForms = document.getElementById('id_stopage_set-TOTAL_FORMS');
+      const currentCount = parseInt(totalForms.value);
+      const emptyFormDiv = document.getElementById('empty-stopage-form');
+      if (!emptyFormDiv) return;
+      // Clone the empty form template
+      const newForm = emptyFormDiv.firstElementChild.cloneNode(true);
+      // Update all name/id attributes
+      newForm.querySelectorAll('input, select, textarea, label').forEach(function(el) {
+        if (el.name) el.name = el.name.replace(/__prefix__/, currentCount);
+        if (el.id) el.id = el.id.replace(/__prefix__/, currentCount);
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = '';
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      });
+      stopagesList.appendChild(newForm);
+      totalForms.value = currentCount + 1;
+      // Attach delete handler to new form's delete checkbox
+      attachDeleteHandler(newForm);
+    });
+  }
+  // Attach delete handler to all existing delete checkboxes
+  function attachDeleteHandler(formDiv) {
+    const delBox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (delBox) {
+      delBox.addEventListener('change', function() {
+        if (delBox.checked) {
+          formDiv.style.display = 'none';
+        } else {
+          formDiv.style.display = '';
+        }
+      });
+    }
+  }
+  document.querySelectorAll('.stopage-form').forEach(attachDeleteHandler);
+});
+</script>
 {% endblock %}

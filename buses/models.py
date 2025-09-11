@@ -1,10 +1,12 @@
 from django.db import models
 
 # Model to define a specific bus route (e.g., "Bus 1: Main Campus to City Center")
+
 class BusRoute(models.Model):
     bus_number = models.CharField(max_length=10, unique=True, help_text="e.g., 'Bus 1', 'B-101'")
-    destination = models.CharField(max_length=100, help_text="e.g., 'City Center', 'Main Campus'")
-    description = models.TextField(blank=True, null=True, help_text="Additional details about the route")
+    route = models.CharField(max_length=100, help_text="e.g., 'City Center', 'Main Campus'")
+    ultimate_pickup_time = models.TimeField(blank=True, null=True, help_text="Earliest pick-up time among stopages")
+    ultimate_drop_time = models.TimeField(blank=True, null=True, help_text="Latest pick-up time among stopages")
 
     def __str__(self):
         return f"{self.bus_number} - {self.destination}"
@@ -40,11 +42,11 @@ class BusSchedule(models.Model):
         unique_together = ('route', 'departure_time', 'route_type')
         ordering = ['route__bus_number', 'departure_time']
 
+
 class Stopage(models.Model):
     route = models.ForeignKey(BusRoute, on_delete=models.CASCADE, related_name='stopages')
     name = models.CharField(max_length=100, help_text="Stopage name (e.g., 'Main Gate', 'Science Building')")
     pickup_time = models.TimeField(help_text="Pick-up time at this stop")
-    drop_time = models.TimeField(help_text="Drop time at this stop")
 
     class Meta:
         ordering = ['pickup_time']

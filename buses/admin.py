@@ -13,8 +13,8 @@ class StopageInline(admin.TabularInline):
     verbose_name_plural = "Stopages"
 
 class BusRouteAdmin(admin.ModelAdmin):
-    list_display = ('bus_number', 'destination')
-    search_fields = ('bus_number', 'destination')
+    list_display = ('bus_number', 'route')
+    search_fields = ('bus_number', 'route')
     inlines = [StopageInline]
 
 class GlobalSettingsAdmin(admin.ModelAdmin):

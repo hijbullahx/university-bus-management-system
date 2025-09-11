@@ -1,13 +1,13 @@
 from django import forms
 from .models import BusRoute, Stopage
 
+
 class StopageForm(forms.ModelForm):
     class Meta:
         model = Stopage
-        fields = ['name', 'pickup_time', 'drop_time']
+        fields = ['name', 'pickup_time']
         widgets = {
             'pickup_time': forms.TimeInput(attrs={'type': 'time'}),
-            'drop_time': forms.TimeInput(attrs={'type': 'time'}),
         }
 
 StopageFormSet = forms.inlineformset_factory(
@@ -17,4 +17,4 @@ StopageFormSet = forms.inlineformset_factory(
 class BusRouteForm(forms.ModelForm):
     class Meta:
         model = BusRoute
-        fields = ['bus_number', 'destination', 'description']
+        fields = ['bus_number', 'route']

@@ -9,16 +9,17 @@ from django.shortcuts import render, redirect
 @staff_required
 def edit_route(request, route_id):
     route = get_object_or_404(BusRoute, pk=route_id)
+    stopage_prefix = 'stopage_set'
     if request.method == 'POST':
         form = BusRouteForm(request.POST, instance=route)
-        formset = StopageFormSet(request.POST, instance=route)
+        formset = StopageFormSet(request.POST, instance=route, prefix=stopage_prefix)
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
             return redirect('buses:custom_admin_dashboard')
     else:
         form = BusRouteForm(instance=route)
-        formset = StopageFormSet(instance=route)
+        formset = StopageFormSet(instance=route, prefix=stopage_prefix)
     return render(request, 'buses/custom_admin/edit_route.html', {'form': form, 'formset': formset, 'route': route})
 
 @login_required
