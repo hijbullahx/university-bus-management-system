@@ -2,7 +2,7 @@
 {% block content %}
 <div class="custom-admin-dashboard">
   <h1>Delete Route</h1>
-  <p>Are you sure you want to delete the route <strong>{{ route.bus_number }} - {{ route.destination }}</strong>?</p>
+  <p>Are you sure you want to delete the route <strong>{{ route.bus_number }} - {{ route.route }}</strong>?</p>
   <form method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Yes, Delete</button>

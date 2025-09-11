@@ -7,6 +7,7 @@ class BusRoute(models.Model):
     route = models.CharField(max_length=100, help_text="e.g., 'City Center', 'Main Campus'")
     ultimate_pickup_time = models.TimeField(blank=True, null=True, help_text="Earliest pick-up time among stopages")
     ultimate_drop_time = models.TimeField(blank=True, null=True, help_text="Latest pick-up time among stopages")
+    is_shuttle = models.BooleanField(default=False, help_text="Is this a shuttle bus route?")
 
     def __str__(self):
         return f"{self.bus_number} - {self.destination}"

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="color: #bfa100; margin-bottom: 24px;">Stopages for {{ route.bus_number }} <span style="color:#bfa100; font-weight:normal;">({{ route.route }})</span></h2>
+    <ul style="list-style:none; padding:0;">
+        {% for stop in stopages %}
+            <li style="background:#fffbe6; border-radius:8px; margin-bottom:12px; padding:14px 18px; box-shadow:0 2px 8px #bfa10022; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold; color:#bfa100;">{{ stop.name }}</span>
+                <span style="color:#333;">Pick-up: {{ stop.pickup_time|time:'h:i A' }}</span>
+            </li>
+        {% empty %}
+            <li style="color:#888;">No stopages set for this route.</li>
+        {% endfor %}
+    </ul>
+    <a href="/" style="display:inline-block; margin-top:18px; color:#bfa100; text-decoration:underline;">&larr; Back to all buses</a>
+</div>
+{% endblock %}

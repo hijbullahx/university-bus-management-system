@@ -4,16 +4,35 @@
   <h1>IUBAT Bus Admin Panel</h1>
   <div class="admin-section">
     <h2>Routes</h2>
-  <a href="{% url 'buses:custom_create_route' %}" class="btn btn-primary">+ Create New Route</a>
+    <a href="{% url 'buses:custom_create_route' %}" class="btn btn-primary">+ Create New Route</a>
+    <a href="{% url 'buses:custom_create_shuttle_route' %}" class="btn btn-primary" style="margin-left:12px;">+ Create New Shuttle Route</a>
     <ul class="route-list">
       {% for route in routes %}
+        {% if not route.is_shuttle %}
         <li>
           <strong>{{ route.bus_number }}</strong> - {{ route.route }}
           <a href="{% url 'buses:custom_edit_route' route.id %}" class="btn btn-sm btn-secondary">Edit</a>
           <a href="{% url 'buses:custom_delete_route' route.id %}" class="btn btn-sm btn-danger" style="margin-left:8px;">Delete</a>
         </li>
+        {% endif %}
       {% empty %}
         <li>No routes found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="admin-section">
+    <h2>Shuttle Routes</h2>
+    <ul class="route-list">
+      {% for route in routes %}
+        {% if route.is_shuttle %}
+        <li>
+          <strong>{{ route.bus_number }}</strong> - {{ route.route }}
+          <a href="{% url 'buses:custom_edit_shuttle_route' route.id %}" class="btn btn-sm btn-secondary">Edit</a>
+          <a href="{% url 'buses:custom_delete_shuttle_route' route.id %}" class="btn btn-sm btn-danger" style="margin-left:8px;">Delete</a>
+        </li>
+        {% endif %}
+      {% empty %}
+        <li>No shuttle routes found.</li>
       {% endfor %}
     </ul>
   </div>

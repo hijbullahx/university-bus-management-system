@@ -17,4 +17,13 @@ StopageFormSet = forms.inlineformset_factory(
 class BusRouteForm(forms.ModelForm):
     class Meta:
         model = BusRoute
-        fields = ['bus_number', 'route']
+        fields = ['bus_number', 'route', 'is_shuttle']
+
+
+class ShuttleRouteForm(forms.ModelForm):
+    class Meta:
+        model = BusRoute
+        fields = ['bus_number', 'route', 'is_shuttle']
+        widgets = {
+            'is_shuttle': forms.HiddenInput(),
+        }
