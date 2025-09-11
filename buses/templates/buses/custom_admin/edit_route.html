@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="custom-admin-dashboard">
+  <h1>Edit Route: {{ route.bus_number }} - {{ route.destination }}</h1>
+  <form method="post" class="route-form">
+    {% csrf_token %}
+    <div class="form-section">
+      <h2>Route Details</h2>
+      {{ form.as_p }}
+    </div>
+    <div class="form-section">
+      <h2>Stopages</h2>
+      {{ formset.management_form }}
+      <div id="stopages-list">
+        {% for stopage_form in formset %}
+          <div class="stopage-form">
+            {{ stopage_form.as_p }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="submit" class="btn">Save Changes</button>
+    <a href="{% url 'buses:custom_admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
+{% block extrastyle %}
+<style>
+.form-section {
+  margin-bottom: 32px;
+}
+.stopage-form {
+  background: #fcf8e8;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px #bfa10011;
+}
+.route-form label {
+  font-weight: bold;
+  color: #bfa100;
+}
+.route-form input, .route-form textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1.5px solid #f7e9b0;
+  margin-bottom: 12px;
+  background: #fff;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}IUBAT Bus Admin{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                background-color: #fcf8e8;
+                color: #333;
+            }
+            .navbar {
+                background: #bfa100;
+                color: #fff;
+                padding: 18px 32px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 3px solid #f7e9b0;
+            }
+            .navbar h1 {
+                margin: 0;
+                font-size: 1.5em;
+                letter-spacing: 2px;
+                text-shadow: 1px 1px 0 #fffbe6, 2px 2px 0 #f7e9b0;
+            }
+            .navbar a {
+                color: #fff;
+                text-decoration: none;
+                font-weight: bold;
+                margin-left: 24px;
+                transition: text-decoration 0.2s;
+            }
+            .navbar a:hover {
+                text-decoration: underline;
+            }
+            .container {
+                max-width: 900px;
+                margin: 40px auto;
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 2px 16px #bfa10022;
+                padding: 32px 28px;
+            }
+            h1, h2 {
+                color: #bfa100;
+            }
+            .btn, .btn-primary, .btn-secondary, .btn-danger {
+                display: inline-block;
+                padding: 8px 18px;
+                border-radius: 6px;
+                background: #bfa100;
+                color: #fff;
+                text-decoration: none;
+                font-weight: bold;
+                margin-bottom: 18px;
+                transition: background 0.2s;
+                border: none;
+                cursor: pointer;
+            }
+            .btn-secondary {
+                background: #888;
+                margin-left: 12px;
+            }
+            .btn-secondary:hover {
+                background: #555;
+            }
+            .btn-danger {
+                background: #c0392b;
+            }
+            .btn-danger:hover {
+                background: #a93226;
+            }
+            .form-section {
+                margin-bottom: 32px;
+            }
+            .stopage-form {
+                background: #fcf8e8;
+                border-radius: 8px;
+                padding: 16px 18px;
+                margin-bottom: 18px;
+                box-shadow: 0 1px 4px #bfa10011;
+            }
+            label {
+                font-weight: bold;
+                color: #bfa100;
+            }
+            input, textarea, select {
+                width: 100%;
+                padding: 8px;
+                border-radius: 5px;
+                border: 1.5px solid #f7e9b0;
+                margin-bottom: 12px;
+                background: #fff;
+            }
+        </style>
+    {% block extrastyle %}{% endblock %}
+</head>
+<body>
+    <div class="navbar">
+        <h1>IUBAT Bus Admin</h1>
+        <div>
+            <a href="/">View Site</a>
+            <a href="/logout/">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

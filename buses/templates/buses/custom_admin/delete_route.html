@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="custom-admin-dashboard">
+  <h1>Delete Route</h1>
+  <p>Are you sure you want to delete the route <strong>{{ route.bus_number }} - {{ route.destination }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'buses:custom_admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
+{% block extrastyle %}
+<style>
+.btn-danger {
+  background: #c0392b;
+  color: #fff;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  margin-right: 12px;
+  padding: 8px 18px;
+  transition: background 0.2s;
+}
+.btn-danger:hover {
+  background: #a93226;
+}
+</style>
+{% endblock %}
