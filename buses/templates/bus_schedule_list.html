@@ -177,9 +177,12 @@
         {% endfor %}
         {% for route in routes %}
           {% if route.is_shuttle %}
-            <a href="{% url 'buses:route_stopages_detail' route.id %}" class="bus-btn-full shuttle-btn" style="display:block; text-decoration:none; width:100%; margin-bottom:18px;">
-              Shuttle Bus<span class="route-name"> {{ route.route }}</span>
-            </a>
+            <div style="margin-bottom: 24px;">
+              <a href="{% url 'buses:route_stopages_detail' route.id %}" class="bus-btn-full shuttle-btn" style="display:block; text-decoration:none; width:100%; margin-bottom:8px;">
+                {{ route.bus_number }}<span class="route-name"> {{ route.route }}</span>
+              </a>
+              {# Table removed: now only shown in detail page #}
+            </div>
           {% endif %}
         {% endfor %}
       </div>

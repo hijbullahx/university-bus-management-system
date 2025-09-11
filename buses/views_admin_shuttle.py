@@ -11,8 +11,7 @@ def create_shuttle_route(request):
         if form.is_valid() and schedule_formset.is_valid():
             shuttle_route = form.save(commit=False)
             shuttle_route.is_shuttle = True
-            shuttle_route.save()
-            # Save shuttle schedule as JSON in route.notes (or another field if you want)
+            # Save shuttle schedule as JSON in notes field
             schedule_data = []
             for schedule_form in schedule_formset:
                 if schedule_form.cleaned_data and not schedule_form.cleaned_data.get('DELETE', False):

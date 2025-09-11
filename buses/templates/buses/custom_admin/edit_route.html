@@ -4,6 +4,9 @@
   <h1>Edit Route: {{ route.bus_number }} - {{ route.route }}</h1>
   <form method="post" class="route-form">
     {% csrf_token %}
+    {% if form.errors %}
+      <div style="color: red; margin-bottom: 12px;">{{ form.errors }}</div>
+    {% endif %}
     <div class="form-section">
       <h2>Route Details</h2>
       {{ form.as_p }}
@@ -11,9 +14,15 @@
     <div class="form-section">
       <h2>Stopages</h2>
       {{ formset.management_form }}
+      {% if formset.non_form_errors %}
+        <div style="color: red; margin-bottom: 12px;">{{ formset.non_form_errors }}</div>
+      {% endif %}
       <div id="stopages-list">
         {% for stopage_form in formset %}
           <div class="stopage-form">
+            {% if stopage_form.errors %}
+              <div style="color: red; margin-bottom: 8px;">{{ stopage_form.errors }}</div>
+            {% endif %}
             {{ stopage_form.as_p }}
           </div>
         {% endfor %}
