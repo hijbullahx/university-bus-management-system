@@ -1,3 +1,5 @@
+# Custom login URL for admin panel
+LOGIN_URL = '/login/'
 """
 Django settings for bus_management_project project.
 
