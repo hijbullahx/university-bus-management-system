@@ -9,64 +9,72 @@
             body {
                 font-family: Arial, sans-serif;
                 margin: 0;
-                background-color: #fcf8e8;
-                color: #333;
+                background-color: #f9fbe7;
+                color: #234d20;
             }
             .navbar {
-                background: #bfa100;
-                color: #fff;
+                background: linear-gradient(90deg, #7cb342 60%, #fffde7 100%);
+                color: #234d20;
                 padding: 18px 32px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                border-bottom: 3px solid #f7e9b0;
+                border-bottom: 3px solid #c5e1a5;
             }
             .navbar h1 {
                 margin: 0;
                 font-size: 1.5em;
                 letter-spacing: 2px;
-                text-shadow: 1px 1px 0 #fffbe6, 2px 2px 0 #f7e9b0;
+                color: #388e3c;
+                text-shadow: 1px 1px 0 #fffde7, 2px 2px 0 #dcedc8;
             }
             .navbar a {
-                color: #fff;
+                color: #388e3c;
                 text-decoration: none;
                 font-weight: bold;
                 margin-left: 24px;
-                transition: text-decoration 0.2s;
+                transition: text-decoration 0.2s, color 0.2s;
             }
             .navbar a:hover {
                 text-decoration: underline;
+                color: #234d20;
             }
             .container {
                 max-width: 900px;
                 margin: 40px auto;
-                background: #fff;
+                background: #fffde7;
                 border-radius: 12px;
-                box-shadow: 0 2px 16px #bfa10022;
+                box-shadow: 0 2px 16px #c5e1a5;
                 padding: 32px 28px;
             }
             h1, h2 {
-                color: #bfa100;
+                color: #388e3c;
             }
             .btn, .btn-primary, .btn-secondary, .btn-danger {
                 display: inline-block;
                 padding: 8px 18px;
                 border-radius: 6px;
-                background: #bfa100;
+                background: #7cb342;
                 color: #fff;
                 text-decoration: none;
                 font-weight: bold;
                 margin-bottom: 18px;
-                transition: background 0.2s;
+                transition: background 0.2s, color 0.2s;
                 border: none;
                 cursor: pointer;
             }
+            .btn:hover, .btn-primary:hover {
+                background: #388e3c;
+                color: #fff;
+            }
             .btn-secondary {
-                background: #888;
+                background: #c5e1a5;
+                color: #234d20;
                 margin-left: 12px;
             }
             .btn-secondary:hover {
-                background: #555;
+                background: #a5d6a7;
+                color: #234d20;
             }
             .btn-danger {
                 background: #c0392b;
@@ -78,21 +86,21 @@
                 margin-bottom: 32px;
             }
             .stopage-form {
-                background: #fcf8e8;
+                background: #fffde7;
                 border-radius: 8px;
                 padding: 16px 18px;
                 margin-bottom: 18px;
-                box-shadow: 0 1px 4px #bfa10011;
+                box-shadow: 0 1px 4px #c5e1a511;
             }
             label {
                 font-weight: bold;
-                color: #bfa100;
+                color: #388e3c;
             }
             input, textarea, select {
                 width: 100%;
                 padding: 8px;
                 border-radius: 5px;
-                border: 1.5px solid #f7e9b0;
+                border: 1.5px solid #c5e1a5;
                 margin-bottom: 12px;
                 background: #fff;
             }
