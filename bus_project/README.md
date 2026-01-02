@@ -1,103 +1,109 @@
-# IUBAT Bus Management System
+# 🚌 IUBAT Bus Management System
 
-A modern Django-based web application for managing university bus routes, schedules, and shuttle services. Designed for IUBAT, but easily adaptable for other institutions.
+A complete production-ready Django-based bus tracking and management system for IUBAT (International University of Business Agriculture and Technology).
 
-## Features
+## 🎯 Features
 
-- **User Home Page**: View all bus and shuttle routes, with clear schedules and route details.
-- **Shuttle Bus Support**: Special UI and schedule table for shuttle buses (no stopages, only timetable).
-- **Custom Admin Panel**: Create, edit, and delete routes and shuttle routes with a user-friendly interface.
-- **12-hour Time Format**: All times displayed in 12-hour format with AM/PM selection.
-- **Dynamic Formsets**: Add/remove stopages and shuttle schedules with dropdowns and time pickers.
-- **Responsive Design**: Mobile-friendly, modern yellow and green theme.
-- **REST API Ready**: Includes Django REST Framework for future API integrations.
+### **4 Actor Roles System**
 
-## Quick Start
+1. **👤 USER Role**
+   - View live bus tracking on interactive Leaflet.js map
+   - See real-time bus locations and routes
+   - Receive system notifications
+   - View bus schedules
 
-### 1. Clone the Repository
+2. **🚗 DRIVER Role**
+   - Mobile-responsive dashboard
+   - Start/Stop route tracking
+   - Automatic GPS location posting every 10 seconds
+   - Report issues (Breakdown, Traffic, Emergency, Accident)
+   - View assigned bus and route information
+
+3. **👨‍💼 ADMIN Role**
+   - Comprehensive dashboard with statistics
+   - Manage routes and schedules
+   - View reports with Chart.js visualizations
+   - Monitor live bus tracking
+   - Manage issues and notifications
+   - View on-time performance metrics
+
+4. **🏛️ AUTHORITY Role**
+   - Full system management access
+   - All admin features plus oversight capabilities
+   - System-wide configuration
+
+## 🚀 Quick Start
+
+### 1. Setup Environment
+
 ```bash
-git clone https://github.com/hijbullahx/university-bus-management-system.git
-cd university-bus-management-system
-```
-
-### 2. Install Dependencies
-```bash
+cd bus_project
+python -m venv ../venv
+source ../venv/Scripts/activate  # Windows
 pip install -r Requirements.txt
 ```
 
-### 3. Database Setup
+### 2. Configure Database
+
 ```bash
 python manage.py migrate
+python manage.py populate_sample_data
+python manage.py create_test_users
 ```
 
-### 4. Create Superuser (Admin)
-```bash
-python manage.py createsuperuser
-```
+### 3. Run Server
 
-### 5. Run the Server
 ```bash
 python manage.py runserver
 ```
 
-### 6. Access the App
-- **User Home Page**: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-- **Admin Panel**: [http://127.0.0.1:8000/admin-panel/](http://127.0.0.1:8000/admin-panel/)
+Visit: **http://127.0.0.1:8000/buses/login/**
 
-## Project Structure
+## 🔐 Test User Credentials
 
-```
-Requirements.txt
-bus_project/
-    manage.py
-    bus_management_project/
-        settings.py
-        urls.py
-        ...
-    buses/
-        models.py
-        forms.py
-        forms_shuttle_schedule.py
-        views.py
-        views_admin_shuttle.py
-        views_admin_shuttle_edit.py
-        templates/
-            bus_schedule_list.html
-            route_stopages_detail.html
-            buses/custom_admin/
-                dashboard.html
-                create_route.html
-                edit_route.html
-                create_shuttle_route.html
-                edit_shuttle_route.html
-                ...
+| Role      | Username  | Password     | Access                          |
+|-----------|-----------|--------------|--------------------------------|
+| USER      | testuser  | user123      | Bus tracking map               |
+| DRIVER    | driver1   | driver123    | Driver dashboard + GPS         |
+| DRIVER    | driver2   | driver123    | Driver dashboard + GPS         |
+| ADMIN     | admin     | admin123     | Admin dashboard + management   |
+| AUTHORITY | authority | authority123 | Full system access             |
+
+## 🗺️ Key URLs
+
+- **Login**: `/buses/login/`
+- **User Map**: `/buses/map/`
+- **Driver Dashboard**: `/buses/driver/`
+- **Admin Dashboard**: `/buses/admin-dashboard/`
+- **API Endpoints**: `/api/`
+
+## 🎮 GPS Simulation
+
+```bash
+# Run simulation for testing
+python manage.py simulate_bus_gps
+
+# Stops automatically when real driver starts tracking
 ```
 
-## Key Technologies
-- Django 4.2+
-- Django REST Framework
-- HTML5, CSS3 (custom theme)
-- SQLite (default, can use PostgreSQL)
+## 🚢 Production Deployment
 
-## Usage
-- **Users**: View bus and shuttle schedules, route details.
-- **Admins**: Login to admin panel, manage routes, stopages, and shuttle timetables.
+### Deploy to Render/Railway
 
-## Customization
-- Change theme colors in `bus_schedule_list.html` and `base.html`.
-- Add/modify bus routes and schedules via the admin panel.
-- Extend with REST API endpoints for mobile apps or integrations.
+1. Set environment variables: `SECRET_KEY`, `DATABASE_URL`, `DEBUG=False`
+2. Build Command: `./build.sh`
+3. Start Command: `gunicorn bus_management_project.wsgi:application`
 
-## Deployment
-- Use Gunicorn and Whitenoise for production.
-- Supports Heroku, Railway, or any cloud platform.
+Pre-configured with WhiteNoise, Gunicorn, and PostgreSQL support.
 
-## License
-MIT License
+## 🔧 Technical Stack
 
-## Author
-- [hijbullahx](https://github.com/hijbullahx)
+- Django 4.2.23, Python 3.9+
+- Leaflet.js for maps
+- Chart.js for reports
+- Django REST Framework for API
+- IUBAT Green (#2D5016) & Yellow (#FFD700) branding
 
 ---
 
-For any issues or feature requests, please open an issue on GitHub.
+**© 2026 IUBAT University - Built with ❤️**

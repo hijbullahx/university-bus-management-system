@@ -1,16 +1,16 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views, views_admin
-from . import views_logout
+from . import views_auth
 from . import views_admin_route, views_admin_route_edit, views_route_stopages, views_admin_shuttle, views_admin_shuttle_edit
 from . import views_user_map, views_driver, views_admin_dashboard
 
 app_name = 'buses' # Define the app namespace
 
 urlpatterns = [
-  # Authentication
-  path('login/', auth_views.LoginView.as_view(template_name='buses/custom_admin/login.html'), name='custom_login'),
-  path('logout/', views_logout.custom_logout, name='custom_logout'),
+  # Authentication - Unified Login System
+  path('login/', views_auth.unified_login, name='login'),
+  path('logout/', views_auth.custom_logout, name='logout'),
   
   # Public user routes
   path('', views_user_map.user_map_view, name='home'),

@@ -1,5 +1,7 @@
-# Custom login URL for admin panel
-LOGIN_URL = '/login/'
+# Custom login and redirect URLs
+LOGIN_URL = '/buses/login/'
+LOGIN_REDIRECT_URL = '/buses/map/'
+LOGOUT_REDIRECT_URL = '/buses/login/'
 """
 Django settings for bus_management_project project.
 
@@ -42,7 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "buses",
+    "buses",  # IUBAT Bus Management App
     "rest_framework",
     "corsheaders",
 ]
