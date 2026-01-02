@@ -37,20 +37,10 @@ def unified_login(request):
 
 
 def redirect_based_on_role(user):
-    """Helper function to redirect users based on their role"""
-    try:
-        profile = user.profile
-        role = profile.role
-        
-        if role == 'DRIVER':
-            return redirect('buses:driver_dashboard')
-        elif role in ['ADMIN', 'AUTHORITY']:
-            return redirect('buses:admin_dashboard')
-        else:  # USER or default
-            return redirect('buses:user_map')
-    except UserProfile.DoesNotExist:
-        # If no profile exists, treat as regular user
-        return redirect('buses:user_map')
+    """Helper function to redirect users to unified home page"""
+    # Everyone goes to the unified home page
+    # Navigation tabs will adapt based on their role
+    return redirect('buses:home')
 
 
 @login_required

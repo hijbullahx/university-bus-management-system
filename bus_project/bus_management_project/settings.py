@@ -1,6 +1,6 @@
 # Custom login and redirect URLs
 LOGIN_URL = '/buses/login/'
-LOGIN_REDIRECT_URL = '/buses/map/'
+LOGIN_REDIRECT_URL = '/buses/'
 LOGOUT_REDIRECT_URL = '/buses/login/'
 """
 Django settings for bus_management_project project.
