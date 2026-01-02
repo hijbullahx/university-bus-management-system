@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - IUBAT Bus Management</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --iubat-green: #2D5016;
+            --iubat-yellow: #FFD700;
+            --iubat-light-green: #4A7C2A;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .status-card {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .status-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            color: var(--iubat-green);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        #map {
+            height: 300px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: var(--iubat-green);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--iubat-light-green);
+        }
+        
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+        
+        .btn-warning {
+            background: var(--iubat-yellow);
+            color: #333;
+        }
+        
+        .tracking-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .tracking-active {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .tracking-error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .location-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚌 Active Route Tracking</h1>
+        <p>{{ active_session.bus.bus_number }} - {{ active_session.bus.route }}</p>
+    </div>
+    
+    <div class="status-card">
+        <div id="tracking-status" class="tracking-status tracking-active">
+            📡 GPS Tracking Active
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="status-label">Current Speed</div>
+                <div class="status-value" id="current-speed">0</div>
+                <div class="status-label">km/h</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Updates Sent</div>
+                <div class="status-value" id="update-count">0</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Duration</div>
+                <div class="status-value" id="duration">00:00</div>
+            </div>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div class="location-info" id="location-info">
+            Waiting for GPS data...
+        </div>
+        
+        <div class="action-buttons">
+            <form method="POST" action="{% url 'driver_end_route' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to end this route?')">
+                    🛑 End Route
+                </button>
+            </form>
+            <a href="{% url 'driver_report_issue' %}" class="btn btn-warning">
+                ⚠️ Report Issue
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([23.8859, 90.3971], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Current position marker
+        let currentMarker = null;
+        const busIcon = L.divIcon({
+            html: '<div style="background-color: #2D5016; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #FFD700;">🚌</div>',
+            className: 'bus-marker',
+            iconSize: [40, 40]
+        });
+        
+        // Tracking state
+        let updateCount = 0;
+        let startTime = new Date();
+        let lastPosition = null;
+        let watchId = null;
+        
+        // CSRF token for POST requests
+        const csrfToken = '{{ csrf_token }}';
+        
+        // Start GPS tracking
+        function startTracking() {
+            if ('geolocation' in navigator) {
+                watchId = navigator.geolocation.watchPosition(
+                    handlePosition,
+                    handleError,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+                
+                // Also send update every 10 seconds
+                setInterval(requestPosition, 10000);
+            } else {
+                showError('Geolocation is not supported by your browser');
+            }
+        }
+        
+        function requestPosition() {
+            navigator.geolocation.getCurrentPosition(handlePosition, handleError);
+        }
+        
+        async function handlePosition(position) {
+            const { latitude, longitude, speed } = position.coords;
+            
+            // Calculate speed in km/h (speed is in m/s)
+            const speedKmh = speed ? (speed * 3.6) : 0;
+            
+            // Update UI
+            document.getElementById('current-speed').textContent = speedKmh.toFixed(1);
+            document.getElementById('location-info').innerHTML = `
+                <strong>📍 Current Location:</strong><br>
+                Latitude: ${latitude.toFixed(6)}, Longitude: ${longitude.toFixed(6)}<br>
+                Accuracy: ${position.coords.accuracy.toFixed(0)}m
+            `;
+            
+            // Update map
+            const latlng = [latitude, longitude];
+            if (currentMarker) {
+                currentMarker.setLatLng(latlng);
+            } else {
+                currentMarker = L.marker(latlng, { icon: busIcon }).addTo(map);
+            }
+            map.setView(latlng, 15);
+            
+            // Send to server
+            try {
+                const response = await fetch('/api/bus-locations/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        bus: {{ active_session.bus.id }},
+                        latitude: latitude,
+                        longitude: longitude,
+                        speed: speedKmh,
+                        is_active: true
+                    })
+                });
+                
+                if (response.ok) {
+                    updateCount++;
+                    document.getElementById('update-count').textContent = updateCount;
+                    document.getElementById('tracking-status').className = 'tracking-status tracking-active';
+                    document.getElementById('tracking-status').textContent = '📡 GPS Tracking Active - Last update sent';
+                } else {
+                    throw new Error('Failed to send location');
+                }
+            } catch (error) {
+                console.error('Error sending location:', error);
+                showError('Failed to send location to server');
+            }
+            
+            lastPosition = { latitude, longitude, speed: speedKmh };
+        }
+        
+        function handleError(error) {
+            let message = 'Error getting location: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message += 'Permission denied. Please allow location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message += 'Position unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message += 'Request timed out.';
+                    break;
+                default:
+                    message += 'Unknown error.';
+            }
+            showError(message);
+        }
+        
+        function showError(message) {
+            document.getElementById('tracking-status').className = 'tracking-status tracking-error';
+            document.getElementById('tracking-status').textContent = '⚠️ ' + message;
+        }
+        
+        // Update duration timer
+        function updateDuration() {
+            const elapsed = Math.floor((new Date() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('duration').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Start tracking on page load
+        startTracking();
+        setInterval(updateDuration, 1000);
+        
+        // Stop tracking when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+        });
+    </script>
+</body>
+</html>

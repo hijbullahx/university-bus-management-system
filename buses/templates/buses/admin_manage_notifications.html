@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Notifications - IUBAT Bus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --iubat-green: #2D5016; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), #4A7C2A);
+            color: white;
+            padding: 1.5rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        textarea {
+            min-height: 100px;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: var(--iubat-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: var(--iubat-green);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📢 Manage Notifications</h1>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Create New Notification</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Title:</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Message:</label>
+                    <textarea name="message" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Type:</label>
+                    <select name="notification_type" required>
+                        <option value="ANNOUNCEMENT">Announcement</option>
+                        <option value="DELAY">Bus Delay</option>
+                        <option value="CANCELLED">Route Cancelled</option>
+                        <option value="ISSUE">Bus Issue</option>
+                        <option value="EMERGENCY">Emergency</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority:</label>
+                    <select name="priority">
+                        <option value="1">Low</option>
+                        <option value="2">Medium</option>
+                        <option value="3">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Bus (optional):</label>
+                    <select name="bus_id">
+                        <option value="">All Buses</option>
+                        {% for bus in buses %}
+                        <option value="{{ bus.id }}">{{ bus.bus_number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn">Create Notification</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Recent Notifications</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notif in notifications %}
+                    <tr>
+                        <td><strong>{{ notif.title }}</strong></td>
+                        <td>{{ notif.get_notification_type_display }}</td>
+                        <td>
+                            {% if notif.priority == 3 %}🔴 High
+                            {% elif notif.priority == 2 %}🟡 Medium
+                            {% else %}🟢 Low{% endif %}
+                        </td>
+                        <td>{{ notif.created_at|date:"M d, h:i A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

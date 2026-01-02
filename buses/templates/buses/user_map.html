@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - IUBAT Bus Management</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --iubat-green: #2D5016;
+            --iubat-yellow: #FFD700;
+            --iubat-light-green: #4A7C2A;
+            --text-dark: #333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .bus-icon {
+            font-size: 2rem;
+        }
+        
+        .simulation-badge {
+            background-color: var(--iubat-yellow);
+            color: var(--text-dark);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 20px auto;
+            gap: 20px;
+            padding: 0 20px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            color: var(--iubat-green);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .notification-item {
+            background: #fff9e6;
+            border-left: 4px solid var(--iubat-yellow);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .notification-title {
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+        
+        .notification-message {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .route-list {
+            margin-top: 20px;
+        }
+        
+        .route-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 3px solid var(--iubat-green);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .route-item:hover {
+            background: #e8f5e9;
+            transform: translateX(5px);
+        }
+        
+        .route-number {
+            font-weight: bold;
+            color: var(--iubat-green);
+        }
+        
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        #map {
+            height: calc(100vh - 140px);
+            width: 100%;
+        }
+        
+        /* Map Controls */
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .control-btn {
+            background: var(--iubat-green);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: var(--iubat-light-green);
+        }
+        
+        /* Loading Indicator */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+            
+            #map {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>
+                <span class="bus-icon">🚌</span>
+                {{ page_title }}
+            </h1>
+            <div>
+                <span class="simulation-badge" id="mode-badge">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>📢 Notifications</h2>
+            <div id="notifications">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                    <div class="notification-item">
+                        <div class="notification-title">{{ notification.title }}</div>
+                        <div class="notification-message">{{ notification.message }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="loading">No active notifications</p>
+                {% endif %}
+            </div>
+            
+            <h2>🚌 Bus Routes</h2>
+            <div class="route-list">
+                {% for route in routes %}
+                <div class="route-item" onclick="focusBus({{ route.id }})">
+                    <div class="route-number">{{ route.bus_number }}</div>
+                    <div>{{ route.route }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Map -->
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize map centered on IUBAT
+        const map = L.map('map').setView([23.8859, 90.3971], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Store bus markers
+        const busMarkers = {};
+        
+        // Custom bus icon
+        const busIcon = L.divIcon({
+            html: '<div style="background-color: #2D5016; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #FFD700;">🚌</div>',
+            className: 'bus-marker',
+            iconSize: [30, 30]
+        });
+        
+        // Fetch and update bus locations
+        async function updateBusLocations() {
+            try {
+                const response = await fetch('/api/map-data/');
+                const data = await response.json();
+                
+                // Update mode badge
+                const modeBadge = document.getElementById('mode-badge');
+                const hasRealBuses = data.buses.some(bus => !bus.is_simulated);
+                
+                if (hasRealBuses) {
+                    modeBadge.textContent = '🟢 Live Tracking';
+                    modeBadge.style.backgroundColor = '#4CAF50';
+                    modeBadge.style.color = 'white';
+                } else if (data.buses.length > 0) {
+                    modeBadge.textContent = '🔵 Simulation Mode';
+                    modeBadge.style.backgroundColor = '#FFD700';
+                    modeBadge.style.color = '#333';
+                } else {
+                    modeBadge.textContent = '⚪ No Active Buses';
+                    modeBadge.style.backgroundColor = '#999';
+                    modeBadge.style.color = 'white';
+                }
+                
+                // Clear old markers that are no longer active
+                const activeBusIds = new Set(data.buses.map(bus => bus.bus_id));
+                Object.keys(busMarkers).forEach(busId => {
+                    if (!activeBusIds.has(parseInt(busId))) {
+                        map.removeLayer(busMarkers[busId]);
+                        delete busMarkers[busId];
+                    }
+                });
+                
+                // Update or create markers for active buses
+                data.buses.forEach(bus => {
+                    const position = [bus.latitude, bus.longitude];
+                    
+                    if (busMarkers[bus.bus_id]) {
+                        // Update existing marker
+                        busMarkers[bus.bus_id].setLatLng(position);
+                        busMarkers[bus.bus_id].setPopupContent(createPopupContent(bus));
+                    } else {
+                        // Create new marker
+                        const marker = L.marker(position, { icon: busIcon })
+                            .addTo(map)
+                            .bindPopup(createPopupContent(bus));
+                        
+                        busMarkers[bus.bus_id] = marker;
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error fetching bus locations:', error);
+            }
+        }
+        
+        function createPopupContent(bus) {
+            const timestamp = new Date(bus.timestamp).toLocaleTimeString();
+            const simBadge = bus.is_simulated ? '<span style="background: #FFD700; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">SIM</span>' : '';
+            
+            return `
+                <div style="min-width: 200px;">
+                    <h3 style="color: #2D5016; margin-bottom: 10px;">${bus.bus_number} ${simBadge}</h3>
+                    <p><strong>Route:</strong> ${bus.route}</p>
+                    <p><strong>Speed:</strong> ${bus.speed.toFixed(1)} km/h</p>
+                    <p><strong>Updated:</strong> ${timestamp}</p>
+                </div>
+            `;
+        }
+        
+        function focusBus(busId) {
+            if (busMarkers[busId]) {
+                map.setView(busMarkers[busId].getLatLng(), 15);
+                busMarkers[busId].openPopup();
+            }
+        }
+        
+        // Initial load
+        updateBusLocations();
+        
+        // Update every 10 seconds
+        setInterval(updateBusLocations, 10000);
+    </script>
+</body>
+</html>

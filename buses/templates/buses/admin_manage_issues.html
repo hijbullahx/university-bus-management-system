@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Issues - IUBAT Bus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --iubat-green: #2D5016; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), #4A7C2A);
+            color: white;
+            padding: 1.5rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--iubat-green);
+            background: white;
+            color: var(--iubat-green);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .filter-btn.active {
+            background: var(--iubat-green);
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: var(--iubat-green);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .badge-pending { background: #fff9c4; color: #f57f17; }
+        .badge-resolved { background: #c8e6c9; color: #2e7d32; }
+        .badge-in_progress { background: #bbdefb; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚠️ Manage Issues</h1>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <div class="filters">
+                <a href="?status=all" class="filter-btn {% if status_filter == 'all' %}active{% endif %}">All</a>
+                <a href="?status=pending" class="filter-btn {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+                <a href="?status=in_progress" class="filter-btn {% if status_filter == 'in_progress' %}active{% endif %}">In Progress</a>
+                <a href="?status=resolved" class="filter-btn {% if status_filter == 'resolved' %}active{% endif %}">Resolved</a>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Bus</th>
+                        <th>Driver</th>
+                        <th>Description</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                    <tr>
+                        <td><strong>{{ issue.get_issue_type_display }}</strong></td>
+                        <td>{{ issue.bus.bus_number }}</td>
+                        <td>{{ issue.driver.username }}</td>
+                        <td>{{ issue.description|truncatewords:15 }}</td>
+                        <td>{{ issue.timestamp|date:"M d, h:i A" }}</td>
+                        <td><span class="badge badge-{{ issue.status|lower }}">{{ issue.get_status_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px;">No issues found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

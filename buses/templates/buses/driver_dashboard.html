@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - IUBAT Bus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --iubat-green: #2D5016;
+            --iubat-yellow: #FFD700;
+            --iubat-light-green: #4A7C2A;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: var(--iubat-green);
+            margin-bottom: 15px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 2rem;
+            color: var(--iubat-green);
+            font-weight: bold;
+        }
+        
+        .status-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--iubat-green);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: var(--iubat-light-green);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: var(--iubat-green);
+        }
+        
+        .btn-warning {
+            background: var(--iubat-yellow);
+            color: #333;
+        }
+        
+        .btn-danger {
+            background: #d32f2f;
+        }
+        
+        .active-session {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-left: 4px solid var(--iubat-green);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .issue-list {
+            list-style: none;
+        }
+        
+        .issue-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .badge-pending {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+        
+        .badge-resolved {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🚌 Driver Dashboard</h1>
+            <div>
+                <a href="{% url 'buses:custom_logout' %}" class="btn">Logout</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="card" style="background: {% if message.tags == 'error' %}#ffebee{% elif message.tags == 'success' %}#e8f5e9{% else %}#fff9c4{% endif %};">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if active_session %}
+        <div class="active-session">
+            <h2>✅ Active Route Session</h2>
+            <p><strong>Bus:</strong> {{ active_session.bus.bus_number }} - {{ active_session.bus.route }}</p>
+            <p><strong>Started:</strong> {{ active_session.started_at|date:"M d, Y h:i A" }}</p>
+            <div style="margin-top: 15px;">
+                <a href="{% url 'buses:driver_tracking' %}" class="btn btn-primary">📍 View Tracking</a>
+                <form method="POST" action="{% url 'buses:driver_end_route' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('End this route?')">🛑 End Route</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <h2>Start a Route</h2>
+            {% if assigned_bus %}
+            <p>Your assigned bus: <strong>{{ assigned_bus.bus_number }}</strong></p>
+            {% endif %}
+            <p>No active route session. Start one to begin tracking.</p>
+            <a href="{% url 'buses:driver_start_route' %}" class="btn btn-primary">🚀 Start Route</a>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <a href="{% url 'buses:driver_report_issue' %}" class="btn btn-warning">⚠️ Report Issue</a>
+            <a href="{% url 'buses:bus_schedule_list' %}" class="btn">📅 View Schedules</a>
+        </div>
+        
+        <div class="card">
+            <h2>Recent Issues Reported</h2>
+            {% if recent_issues %}
+            <ul class="issue-list">
+                {% for issue in recent_issues %}
+                <li class="issue-item">
+                    <div>
+                        <strong>{{ issue.get_issue_type_display }}</strong>
+                        <br>
+                        <small>{{ issue.timestamp|date:"M d, h:i A" }} - {{ issue.bus.bus_number }}</small>
+                    </div>
+                    <span class="badge badge-{{ issue.status|lower }}">{{ issue.get_status_display }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No issues reported yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
