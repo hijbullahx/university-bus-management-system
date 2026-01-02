@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="custom-admin-dashboard">
+  <h1>Edit Route: {{ route.bus_number }} - {{ route.route }}</h1>
+  <form method="post" class="route-form">
+    {% csrf_token %}
+    {% if form.errors %}
+      <div style="color: red; margin-bottom: 12px;">{{ form.errors }}</div>
+    {% endif %}
+    <div class="form-section">
+      <h2>Route Details</h2>
+      {{ form.as_p }}
+    </div>
+    <div class="form-section">
+      <h2>Stopages</h2>
+      {{ formset.management_form }}
+      {% if formset.non_form_errors %}
+        <div style="color: red; margin-bottom: 12px;">{{ formset.non_form_errors }}</div>
+      {% endif %}
+      <div id="stopages-list">
+        {% for stopage_form in formset %}
+          <div class="stopage-form">
+            {% if stopage_form.errors %}
+              <div style="color: red; margin-bottom: 8px;">{{ stopage_form.errors }}</div>
+            {% endif %}
+            {{ stopage_form.as_p }}
+          </div>
+        {% endfor %}
+      </div>
+      <!-- Hidden empty form template for JS cloning -->
+      <div id="empty-stopage-form" style="display:none;">
+        <div class="stopage-form">
+          {{ formset.empty_form.as_p|safe }}
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary" id="add-stopage-btn">+ Add Stopage</button>
+    </div>
+    <button type="submit" class="btn">Save Changes</button>
+    <a href="{% url 'buses:custom_admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
+{% block extrastyle %}
+<style>
+.form-section {
+  margin-bottom: 32px;
+}
+.stopage-form {
+  background: #fcf8e8;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px #bfa10011;
+}
+.route-form label {
+  font-weight: bold;
+  color: #bfa100;
+}
+.route-form input, .route-form textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1.5px solid #f7e9b0;
+  margin-bottom: 12px;
+  background: #fff;
+}
+  #add-stopage-btn {
+    margin-top: 8px;
+    margin-bottom: 0;
+    background: #bfa100;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #add-stopage-btn:hover {
+    background: #a88c00;
+  }
+</style>
+<script>
+// Robust dynamic formset: clone hidden empty form, update names/ids, clear values, update TOTAL_FORMS
+document.addEventListener('DOMContentLoaded', function() {
+  const addBtn = document.getElementById('add-stopage-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', function() {
+      const stopagesList = document.getElementById('stopages-list');
+      const totalForms = document.getElementById('id_stopage_set-TOTAL_FORMS');
+      const currentCount = parseInt(totalForms.value);
+      const emptyFormDiv = document.getElementById('empty-stopage-form');
+      if (!emptyFormDiv) return;
+      // Clone the empty form template
+      const newForm = emptyFormDiv.firstElementChild.cloneNode(true);
+      // Update all name/id attributes
+      newForm.querySelectorAll('input, select, textarea, label').forEach(function(el) {
+        if (el.name) el.name = el.name.replace(/__prefix__/, currentCount);
+        if (el.id) el.id = el.id.replace(/__prefix__/, currentCount);
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = '';
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      });
+      stopagesList.appendChild(newForm);
+      totalForms.value = currentCount + 1;
+      // Attach delete handler to new form's delete checkbox
+      attachDeleteHandler(newForm);
+    });
+  }
+  // Attach delete handler to all existing delete checkboxes
+  function attachDeleteHandler(formDiv) {
+    const delBox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (delBox) {
+      delBox.addEventListener('change', function() {
+        if (delBox.checked) {
+          formDiv.style.display = 'none';
+        } else {
+          formDiv.style.display = '';
+        }
+      });
+    }
+  }
+  document.querySelectorAll('.stopage-form').forEach(attachDeleteHandler);
+});
+</script>
+{% endblock %}

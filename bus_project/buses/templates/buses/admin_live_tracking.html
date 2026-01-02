@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - IUBAT Bus</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --iubat-green: #2D5016;
+            --iubat-yellow: #FFD700;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), #4A7C2A);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.2);
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        #map {
+            height: calc(100vh - 80px);
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🗺️ {{ page_title }}</h1>
+            <div class="nav-links">
+                <a href="{% url 'buses:admin_dashboard' %}" class="nav-link">Dashboard</a>
+                <a href="{% url 'buses:admin_reports' %}" class="nav-link">Reports</a>
+            </div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([23.8859, 90.3971], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const busMarkers = {};
+        
+        const busIcon = L.divIcon({
+            html: '<div style="background-color: #2D5016; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 3px solid #FFD700;">🚌</div>',
+            className: 'bus-marker',
+            iconSize: [35, 35]
+        });
+        
+        async function updateBusLocations() {
+            try {
+                const response = await fetch('/api/map-data/');
+                const data = await response.json();
+                
+                const activeBusIds = new Set(data.buses.map(bus => bus.bus_id));
+                Object.keys(busMarkers).forEach(busId => {
+                    if (!activeBusIds.has(parseInt(busId))) {
+                        map.removeLayer(busMarkers[busId]);
+                        delete busMarkers[busId];
+                    }
+                });
+                
+                data.buses.forEach(bus => {
+                    const position = [bus.latitude, bus.longitude];
+                    
+                    if (busMarkers[bus.bus_id]) {
+                        busMarkers[bus.bus_id].setLatLng(position);
+                        busMarkers[bus.bus_id].setPopupContent(createPopupContent(bus));
+                    } else {
+                        const marker = L.marker(position, { icon: busIcon })
+                            .addTo(map)
+                            .bindPopup(createPopupContent(bus));
+                        busMarkers[bus.bus_id] = marker;
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching bus locations:', error);
+            }
+        }
+        
+        function createPopupContent(bus) {
+            const timestamp = new Date(bus.timestamp).toLocaleTimeString();
+            const simBadge = bus.is_simulated ? 
+                '<span style="background: #FFD700; padding: 3px 8px; border-radius: 3px; font-size: 0.8em;">SIMULATION</span>' : 
+                '<span style="background: #4CAF50; color: white; padding: 3px 8px; border-radius: 3px; font-size: 0.8em;">LIVE</span>';
+            
+            return `
+                <div style="min-width: 250px;">
+                    <h3 style="color: #2D5016; margin-bottom: 10px;">
+                        ${bus.bus_number} ${simBadge}
+                    </h3>
+                    <p><strong>Route:</strong> ${bus.route}</p>
+                    <p><strong>Speed:</strong> ${bus.speed.toFixed(1)} km/h</p>
+                    <p><strong>Last Updated:</strong> ${timestamp}</p>
+                    <p><strong>Location:</strong> ${bus.latitude.toFixed(6)}, ${bus.longitude.toFixed(6)}</p>
+                </div>
+            `;
+        }
+        
+        updateBusLocations();
+        setInterval(updateBusLocations, 10000);
+    </script>
+</body>
+</html>

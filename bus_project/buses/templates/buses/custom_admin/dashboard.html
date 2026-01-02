@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="custom-admin-dashboard">
+  <h1>IUBAT Bus Admin Panel</h1>
+  <div class="admin-section">
+    <h2>Routes</h2>
+    <a href="{% url 'buses:custom_create_route' %}" class="btn btn-primary">+ Create New Route</a>
+    <a href="{% url 'buses:custom_create_shuttle_route' %}" class="btn btn-primary" style="margin-left:12px;">+ Create New Shuttle Route</a>
+    <ul class="route-list">
+      {% for route in routes %}
+        {% if not route.is_shuttle %}
+        <li>
+          <strong>{{ route.bus_number }}</strong> - {{ route.route }}
+          <a href="{% url 'buses:custom_edit_route' route.id %}" class="btn btn-sm btn-secondary">Edit</a>
+          <a href="{% url 'buses:custom_delete_route' route.id %}" class="btn btn-sm btn-danger" style="margin-left:8px;">Delete</a>
+        </li>
+        {% endif %}
+      {% empty %}
+        <li>No routes found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="admin-section">
+    <h2>Shuttle Routes</h2>
+    <ul class="route-list">
+      {% for route in routes %}
+        {% if route.is_shuttle %}
+        <li>
+          <strong>{{ route.bus_number }}</strong> - {{ route.route }}
+          <a href="{% url 'buses:custom_edit_shuttle_route' route.id %}" class="btn btn-sm btn-secondary">Edit</a>
+          <a href="{% url 'buses:custom_delete_shuttle_route' route.id %}" class="btn btn-sm btn-danger" style="margin-left:8px;">Delete</a>
+        </li>
+        {% endif %}
+      {% empty %}
+        <li>No shuttle routes found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block extrastyle %}
+<style>
+.custom-admin-dashboard {
+  max-width: 700px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #bfa10022;
+  padding: 32px 28px;
+}
+.custom-admin-dashboard h1 {
+  color: #bfa100;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.admin-section h2 {
+  color: #333;
+  margin-bottom: 16px;
+}
+.btn {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 6px;
+  background: #bfa100;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  margin-bottom: 18px;
+  transition: background 0.2s;
+}
+.btn:hover {
+  background: #a88c00;
+}
+.btn-secondary {
+  background: #888;
+  margin-left: 12px;
+}
+.btn-secondary:hover {
+  background: #555;
+}
+.route-list {
+  list-style: none;
+  padding: 0;
+}
+.route-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid #f7e9b0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.route-list li:last-child {
+  border-bottom: none;
+}
+</style>
+{% endblock %}

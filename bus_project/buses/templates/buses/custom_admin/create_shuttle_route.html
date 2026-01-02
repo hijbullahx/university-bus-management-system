@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-form-container">
+  <h2 style="color:#bfa100;">Create New Shuttle Route</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <h3>Shuttle Schedule</h3>
+    <table id="schedule-table" style="width:100%; border-collapse:collapse; margin-bottom:18px;">
+      <thead>
+        <tr style="background:#f7e9b0; color:#bfa100;">
+          <th style="padding:8px; border-radius:6px 0 0 6px;">Campus Departure</th>
+          <th style="padding:8px; border-radius:0 6px 6px 0;">{{ route.route_name }} Departure</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ schedule_formset.management_form }}
+        {% for form in schedule_formset %}
+        <tr class="schedule-form-row">
+          <td style="padding:8px;">{{ form.campus_departure }}</td>
+          <td style="padding:8px;">{{ form.center_station_departure }}</td>
+          <td style="padding:8px;">{% if schedule_formset.can_delete %}{{ form.DELETE }} Remove{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="button" id="add-schedule-btn" class="btn btn-secondary" style="margin-bottom:16px;">Add Schedule</button>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const addBtn = document.getElementById('add-schedule-btn');
+        const table = document.getElementById('schedule-table').getElementsByTagName('tbody')[0];
+        let totalForms = document.getElementById('id_form-TOTAL_FORMS');
+        const emptyRow = `
+        <tr class=\"schedule-form-row\">\n          <td style=\"padding:8px;\"><input type=\"time\" name=\"form-__prefix__-campus_departure\" required id=\"id_form-__prefix__-campus_departure\"></td>\n          <td style=\"padding:8px;\"><input type=\"time\" name=\"form-__prefix__-center_station_departure\" required id=\"id_form-__prefix__-center_station_departure\"></td>\n          <td style=\"padding:8px;\"><input type=\"checkbox\" name=\"form-__prefix__-DELETE\" id=\"id_form-__prefix__-DELETE\" class=\"remove-schedule\"> Remove</td>\n        </tr>`;
+        addBtn.addEventListener('click', function() {
+          const formIdx = parseInt(totalForms.value);
+          let newRow = emptyRow.replace(/__prefix__/g, formIdx);
+          table.insertAdjacentHTML('beforeend', newRow);
+          totalForms.value = formIdx + 1;
+        });
+        // Remove row on checkbox click
+        table.addEventListener('change', function(e) {
+          if (e.target.classList.contains('remove-schedule')) {
+            const row = e.target.closest('tr');
+            if (row) row.remove();
+          }
+        });
+      });
+    </script>
+    <button type="submit" class="btn btn-primary">Create Shuttle Route</button>
+  </form>
+</div>
+{% endblock %}
