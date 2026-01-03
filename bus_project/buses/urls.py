@@ -36,7 +36,7 @@ urlpatterns = [
   path('admin-dashboard/live-tracking/', views_admin_dashboard.admin_live_tracking, name='admin_live_tracking'),
   path('admin-dashboard/manage-issues/', views_admin_dashboard.admin_manage_issues, name='admin_manage_issues'),
   path('admin-dashboard/manage-notifications/', views_admin_dashboard.admin_manage_notifications, name='admin_manage_notifications'),
-  path('authority/global-settings/', views_authority.global_settings, name='global_settings'),
+  # Global settings removed
   path('authority/dashboard/', views_authority_dashboard.authority_dashboard, name='authority_dashboard'),
   path('authority/reports/', views_authority_reports.reports_analytics, name='authority_reports'),
   path('authority/reports/export-pdf/', views_authority_reports.export_report_pdf, name='export_report_pdf'),

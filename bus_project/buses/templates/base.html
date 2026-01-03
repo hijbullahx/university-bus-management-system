@@ -111,9 +111,9 @@
     <div class="navbar">
         <h1>{% if user.is_authenticated %}IUBAT Bus Admin{% else %}IUBAT Bus Service{% endif %}</h1>
         <div>
-            <a href="/">{% if user.is_authenticated %}View Site{% else %}Home{% endif %}</a>
+            <a href="/home/">Home</a>
             {% if user.is_authenticated %}
-                <a href="/logout/">Logout</a>
+                <a href="{% url 'buses:logout' %}">Logout</a>
             {% endif %}
         </div>
     </div>

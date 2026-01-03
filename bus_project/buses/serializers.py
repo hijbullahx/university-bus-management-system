@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (BusRoute, BusSchedule, GlobalSettings, BusLocation, 
+from .models import (BusRoute, BusSchedule, BusLocation, 
                      IssueReport, Notification, UserProfile, DriverRouteSession, Stopage)
 
 class BusRouteSerializer(serializers.ModelSerializer):
@@ -31,10 +31,6 @@ class BusScheduleSerializer(serializers.ModelSerializer):
         fields = ['id', 'route', 'route_id', 'departure_time', 'arrival_time', 'is_active', 'route_type', 'notes']
 
 
-class GlobalSettingsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GlobalSettings
-        fields = '__all__'
 
 
 class BusLocationSerializer(serializers.ModelSerializer):

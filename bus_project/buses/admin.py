@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.utils.html import format_html
-from .models import (BusRoute, BusSchedule, GlobalSettings, Stopage, 
+from .models import (BusRoute, BusSchedule, Stopage, 
                      BusLocation, IssueReport, Notification, UserProfile, DriverRouteSession)
 
 
@@ -59,17 +59,6 @@ class DriverRouteSessionAdmin(admin.ModelAdmin):
     ordering = ('-started_at',)
 
 
-class GlobalSettingsAdmin(admin.ModelAdmin):
-    def has_add_permission(self, request):
-        # Allow adding only if no instance exists
-        if GlobalSettings.objects.exists():
-            return False
-        return super().has_add_permission(request)
-
-    def has_delete_permission(self, request, obj=None):
-        # Disallow deleting the only instance
-        return False
-    
 
 
 # Inject custom CSS for admin branding
@@ -87,7 +76,6 @@ class CustomAdminSite(AdminSite):
 custom_admin_site = CustomAdminSite(name='custom_admin')
 custom_admin_site.register(BusRoute, BusRouteAdmin)
 custom_admin_site.register(BusSchedule)
-custom_admin_site.register(GlobalSettings, GlobalSettingsAdmin)
 custom_admin_site.register(Stopage)
 custom_admin_site.register(BusLocation, BusLocationAdmin)
 custom_admin_site.register(IssueReport, IssueReportAdmin)
@@ -99,10 +87,13 @@ custom_admin_site.register(DriverRouteSession, DriverRouteSessionAdmin)
 # Register with default admin site as well
 admin.site.register(BusRoute, BusRouteAdmin)
 admin.site.register(BusSchedule)
-admin.site.register(GlobalSettings, GlobalSettingsAdmin)
 admin.site.register(Stopage)
 admin.site.register(BusLocation, BusLocationAdmin)
 admin.site.register(IssueReport, IssueReportAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(DriverRouteSession, DriverRouteSessionAdmin)
+
+# Remove the "View site" link in the admin header (hide by clearing site_url)
+custom_admin_site.site_url = None
+admin.site.site_url = None

@@ -4,8 +4,10 @@ Authentication Views - Unified Login System with Role-Based Redirect
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.contrib import messages
 from .models import UserProfile
+from django.contrib.auth.models import User
 
 
 def unified_login(request):
@@ -19,9 +21,19 @@ def unified_login(request):
         return redirect_based_on_role(request.user)
     
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username_or_email = request.POST.get('username')
         password = request.POST.get('password')
-        
+
+        # Allow users to login with either username or email
+        username = username_or_email
+        if username_or_email and '@' in username_or_email:
+            try:
+                user_obj = User.objects.get(email__iexact=username_or_email)
+                username = user_obj.username
+            except User.DoesNotExist:
+                # fall back to using the provided value as username
+                username = username_or_email
+
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
@@ -48,8 +60,21 @@ def redirect_based_on_role(user):
 
 @login_required
 def custom_logout(request):
-    """Logout view that returns to login page"""
+    """Logout view that returns to the unified home page"""
     username = request.user.username
+    # Log out user and ensure session data is removed
     logout(request)
+    try:
+        request.session.flush()
+    except Exception:
+        pass
+
     messages.success(request, f'Goodbye, {username}! You have been logged out.')
-    return redirect('buses:login')
+    response = redirect('buses:login')
+
+    # Remove session and CSRF cookies from client
+    session_cookie = getattr(settings, 'SESSION_COOKIE_NAME', 'sessionid')
+    csrf_cookie = getattr(settings, 'CSRF_COOKIE_NAME', 'csrftoken')
+    response.delete_cookie(session_cookie)
+    response.delete_cookie(csrf_cookie)
+    return response

@@ -3,9 +3,9 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
-from .models import (BusRoute, BusSchedule, GlobalSettings, BusLocation, 
+from .models import (BusRoute, BusSchedule, BusLocation, 
                      IssueReport, Notification, UserProfile, DriverRouteSession)
-from .serializers import (BusRouteSerializer, BusScheduleSerializer, GlobalSettingsSerializer,
+from .serializers import (BusRouteSerializer, BusScheduleSerializer,
                           BusLocationSerializer, BusLocationCreateSerializer, IssueReportSerializer,
                           NotificationSerializer, UserProfileSerializer, DriverRouteSessionSerializer,
                           BusRouteDetailSerializer)
@@ -42,10 +42,7 @@ class BusScheduleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
-class GlobalSettingsViewSet(viewsets.ModelViewSet):
-    queryset = GlobalSettings.objects.all()
-    serializer_class = GlobalSettingsSerializer
-    permission_classes = [permissions.IsAdminUser]
+# GlobalSettings model removed — API endpoint intentionally omitted
 
 
 class BusLocationViewSet(viewsets.ModelViewSet):

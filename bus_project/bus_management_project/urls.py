@@ -10,9 +10,15 @@ def redirect_to_home(request):
         return redirect('buses:home')
     return redirect('buses:login')
 
+
+def redirect_logout(request):
+    """Redirect legacy /logout/ to buses logout view"""
+    return redirect('buses:logout')
+
 urlpatterns = [
     path("admin/", custom_admin_site.urls),  # Django admin panel
     path("", redirect_to_home),  # Root redirects to home or login
+    path("logout/", redirect_logout),  # Legacy logout path -> app logout
     path("buses/", include("buses.urls")),  # Main buses app URLs
     path("api/", include("buses.api_urls")),  # API endpoints for REST framework
 ]
