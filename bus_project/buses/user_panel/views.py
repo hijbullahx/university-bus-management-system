@@ -3,10 +3,12 @@ User Panel Views - Public-facing map interface for users to track buses
 """
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from buses.models import BusRoute, BusLocation, Notification, BusSchedule, GlobalSettings
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Prefetch
+from math import radians, cos, sin, sqrt, atan2
 import pytz
 
 
@@ -119,3 +121,77 @@ def home_view(request):
     }
     
     return render(request, 'user_panel/home.html', context)
+
+
+# ============================================================================
+# API Views for User Panel (AJAX endpoints)
+# ============================================================================
+
+def bus_map_data(request):
+    """
+    API endpoint returning active bus locations with ETA and next stop info
+    Used by the live map interface
+    """
+    def calculate_distance(lat1, lon1, lat2, lon2):
+        """Haversine formula for distance calculation"""
+        R = 6371
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        dlat, dlon = lat2 - lat1, lon2 - lon1
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        return R * 2 * atan2(sqrt(a), sqrt(1-a))
+    
+    def find_next_stop(bus, current_lat, current_lon):
+        """Find next stop based on time"""
+        stopages = bus.stopages.all().order_by('pickup_time')
+        if not stopages:
+            return None, None
+        
+        current_time = timezone.now().time()
+        for stop in stopages:
+            if stop.pickup_time > current_time:
+                return stop, 2.0  # Default 2km distance
+        
+        return stopages.first(), 3.0  # Loop back to first
+    
+    def calculate_eta(distance, speed):
+        """Calculate ETA in minutes"""
+        speed = speed if speed > 0 else 30
+        return int((distance / speed) * 60)
+    
+    # Query parameters
+    recent_time = timezone.now() - timedelta(minutes=5)
+    route_filter = request.GET.get('route')
+    
+    buses = BusRoute.objects.filter(id=route_filter) if route_filter else BusRoute.objects.all()
+    
+    map_data = []
+    for bus in buses:
+        location = BusLocation.objects.filter(
+            bus=bus, is_active=True, timestamp__gte=recent_time
+        ).order_by('-timestamp').first()
+        
+        if location:
+            next_stop, distance = find_next_stop(bus, location.latitude, location.longitude)
+            eta_minutes = calculate_eta(distance, location.speed) if next_stop else None
+            
+            map_data.append({
+                'bus_id': bus.id,
+                'bus_number': bus.bus_number,
+                'route': bus.route,
+                'latitude': float(location.latitude),
+                'longitude': float(location.longitude),
+                'speed': float(location.speed),
+                'timestamp': location.timestamp.isoformat(),
+                'is_simulated': location.is_simulated,
+                'next_stop': next_stop.name if next_stop else 'No upcoming stops',
+                'eta_minutes': eta_minutes,
+                'distance_to_next_stop': round(distance, 2) if distance else None,
+            })
+    
+    return JsonResponse({
+        'buses': map_data,
+        'total_active': len(map_data),
+        'routes': list(BusRoute.objects.values('id', 'bus_number', 'route')),
+        'timestamp': timezone.now().isoformat(),
+    })
+

@@ -19,12 +19,38 @@ user_panel/
 ## Features
 
 ### 1. Live Bus Tracking (`user_map.html`)
-- Real-time map view of all active buses
-- Interactive markers with bus information
-- Route list sidebar
-- Active notifications display
-- Automatic refresh every 10 seconds
-- Simulation mode indicator
+- **Full-screen interactive map** with OpenStreetMap tiles
+- **Real-time bus tracking** with automatic 10-second updates
+- **Bus-shaped moving icons** with distinct styling:
+  - Green icons for live GPS tracking
+  - Orange icons for simulation mode
+- **Enhanced popup information** including:
+  - Bus ID and Bus Number
+  - Route Name
+  - **ETA to next stop** (calculated in real-time)
+  - **Next stop name**
+  - Current speed
+  - Distance to next stop
+  - Last update timestamp
+- **"Follow" button functionality**:
+  - One-click to follow any bus
+  - Map auto-centers every 3 seconds
+  - Visual feedback with button state
+  - Easy stop following
+- **Route selection dropdown**:
+  - Filter buses by specific route
+  - "All Routes" option
+  - Real-time filtering without page reload
+- **Collapsible sidebar** with:
+  - Active notifications display
+  - Quick route access buttons
+  - Space-saving toggle button
+- **Live statistics bar**:
+  - Active bus count
+  - Total routes
+  - System status indicator
+- Interactive markers with hover effects
+- Responsive design for all devices
 
 **URL**: `/buses/user/map/` or `/buses/user/`
 

@@ -25,68 +25,119 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
+            overflow: hidden;
         }
         
         /* Header */
         .header {
             background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
             color: white;
-            padding: 1rem 2rem;
+            padding: 15px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1001;
         }
         
         .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .header h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
         .bus-icon {
-            font-size: 2rem;
+            font-size: 1.8rem;
+        }
+        
+        /* Route Selection Dropdown */
+        .route-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .route-select {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background: white;
+            color: var(--text-dark);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            min-width: 180px;
         }
         
         .simulation-badge {
             background-color: var(--iubat-yellow);
             color: var(--text-dark);
-            padding: 0.3rem 0.8rem;
+            padding: 8px 15px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: bold;
         }
         
-        /* Main Layout */
-        .main-container {
+        /* Full Screen Map Container */
+        .map-wrapper {
+            position: fixed;
+            top: 85px;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
-            max-width: 1400px;
-            margin: 20px auto;
-            gap: 20px;
-            padding: 0 20px;
         }
         
         /* Sidebar */
         .sidebar {
-            width: 300px;
+            width: 320px;
             background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-height: calc(100vh - 140px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
         
-        .sidebar h2 {
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            background: var(--iubat-green);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-content {
+            padding: 15px;
+        }
+        
+        .notification-section, .route-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
             color: var(--iubat-green);
-            margin-bottom: 15px;
-            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .notification-item {
@@ -95,6 +146,7 @@
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
+            font-size: 0.9rem;
         }
         
         .notification-title {
@@ -104,16 +156,12 @@
         }
         
         .notification-message {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #666;
         }
         
-        .route-list {
-            margin-top: 20px;
-        }
-        
         .route-item {
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 8px;
             background: #f9f9f9;
             border-radius: 5px;
@@ -130,48 +178,152 @@
         .route-number {
             font-weight: bold;
             color: var(--iubat-green);
+            font-size: 1rem;
+        }
+        
+        .route-name {
+            font-size: 0.85rem;
+            color: #666;
         }
         
         /* Map Container */
-        .map-container {
-            flex: 1;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
         #map {
-            height: calc(100vh - 140px);
+            flex: 1;
+            height: 100%;
             width: 100%;
         }
         
-        /* Map Controls */
-        .map-controls {
+        /* Toggle Sidebar Button */
+        .toggle-sidebar-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             background: white;
+            border: none;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 5px;
+            cursor: pointer;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1002;
+            font-size: 20px;
+            transition: left 0.3s ease;
         }
         
-        .control-btn {
+        .toggle-sidebar-btn.sidebar-hidden {
+            left: 10px;
+        }
+        
+        .toggle-sidebar-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        /* Enhanced Bus Icon SVG */
+        .custom-bus-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--iubat-green);
+            border: 3px solid var(--iubat-yellow);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .custom-bus-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Enhanced Popup */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            padding: 0;
+        }
+        
+        .bus-popup {
+            min-width: 280px;
+            padding: 0;
+        }
+        
+        .popup-header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .popup-bus-number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .popup-route {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .popup-body {
+            padding: 15px;
+        }
+        
+        .popup-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .popup-info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .popup-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .popup-value {
+            color: var(--text-dark);
+            font-weight: bold;
+        }
+        
+        .eta-badge {
+            background: var(--iubat-yellow);
+            color: var(--text-dark);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .follow-btn {
+            width: 100%;
+            padding: 12px;
             background: var(--iubat-green);
             color: white;
             border: none;
-            padding: 8px 15px;
             border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
-            margin-bottom: 5px;
-            width: 100%;
+            margin-top: 10px;
             transition: background 0.3s;
         }
         
-        .control-btn:hover {
+        .follow-btn:hover {
             background: var(--iubat-light-green);
+        }
+        
+        .follow-btn.following {
+            background: #dc3545;
+        }
+        
+        .follow-btn.following:hover {
+            background: #c82333;
         }
         
         /* Loading Indicator */
@@ -181,19 +333,60 @@
             color: #666;
         }
         
+        /* Stats Display */
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-icon {
+            font-size: 1.2rem;
+        }
+        
+        .stat-text {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: var(--iubat-green);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-            }
-            
             .sidebar {
-                width: 100%;
-                max-height: 300px;
+                width: 280px;
             }
             
-            #map {
-                height: 500px;
+            .map-wrapper {
+                top: 120px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
             }
         }
     </style>
@@ -206,44 +399,79 @@
                 <span class="bus-icon">🚌</span>
                 {{ page_title }}
             </h1>
-            <div>
+            <div class="route-controls">
+                <select id="routeFilter" class="route-select">
+                    <option value="">All Routes</option>
+                    {% for route in routes %}
+                    <option value="{{ route.id }}">{{ route.bus_number }} - {{ route.route }}</option>
+                    {% endfor %}
+                </select>
                 <span class="simulation-badge" id="mode-badge">Loading...</span>
             </div>
         </div>
     </div>
     
-    <!-- Main Container -->
-    <div class="main-container">
+    <!-- Main Map Wrapper -->
+    <div class="map-wrapper">
+        <!-- Toggle Sidebar Button -->
+        <button class="toggle-sidebar-btn" id="toggleSidebar" onclick="toggleSidebar()">
+            ☰
+        </button>
+        
         <!-- Sidebar -->
-        <div class="sidebar">
-            <h2>📢 Notifications</h2>
-            <div id="notifications">
-                {% if notifications %}
-                    {% for notification in notifications %}
-                    <div class="notification-item">
-                        <div class="notification-title">{{ notification.title }}</div>
-                        <div class="notification-message">{{ notification.message }}</div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="loading">No active notifications</p>
-                {% endif %}
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span>📊 Information</span>
+                <button onclick="toggleSidebar()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
             </div>
-            
-            <h2>🚌 Bus Routes</h2>
-            <div class="route-list">
-                {% for route in routes %}
-                <div class="route-item" onclick="focusBus({{ route.id }})">
-                    <div class="route-number">{{ route.bus_number }}</div>
-                    <div>{{ route.route }}</div>
+            <div class="sidebar-content">
+                <div class="notification-section">
+                    <div class="section-title">📢 Notifications</div>
+                    <div id="notifications">
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                            <div class="notification-item">
+                                <div class="notification-title">{{ notification.title }}</div>
+                                <div class="notification-message">{{ notification.message }}</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="loading">No active notifications</p>
+                        {% endif %}
+                    </div>
                 </div>
-                {% endfor %}
+                
+                <div class="route-section">
+                    <div class="section-title">🚌 Quick Access</div>
+                    <div class="route-list">
+                        {% for route in routes %}
+                        <div class="route-item" onclick="filterAndFocusRoute({{ route.id }})">
+                            <div class="route-number">{{ route.bus_number }}</div>
+                            <div class="route-name">{{ route.route }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Map -->
-        <div class="map-container">
-            <div id="map"></div>
+        <div id="map"></div>
+        
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-icon">🚌</span>
+                <span class="stat-text">Active Buses: <span class="stat-value" id="activeBusCount">0</span></span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🗺️</span>
+                <span class="stat-text">Routes: <span class="stat-value" id="routeCount">{{ routes|length }}</span></span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">⚡</span>
+                <span class="stat-text">Status: <span class="stat-value" id="systemStatus">Online</span></span>
+            </div>
         </div>
     </div>
     
@@ -251,28 +479,165 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        // Global variables
+        let map = null;
+        let busMarkers = {};
+        let followingBusId = null;
+        let followInterval = null;
+        let currentRouteFilter = '';
+        
         // Initialize map centered on IUBAT
-        const map = L.map('map').setView([23.8859, 90.3971], 13);
+        map = L.map('map').setView([23.8859, 90.3971], 13);
         
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
         }).addTo(map);
         
-        // Store bus markers
-        const busMarkers = {};
+        // Toggle Sidebar Function
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('sidebar-hidden');
+            
+            // Refresh map size after sidebar toggle
+            setTimeout(() => map.invalidateSize(), 300);
+        }
         
-        // Custom bus icon
-        const busIcon = L.divIcon({
-            html: '<div style="background-color: #2D5016; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #FFD700;">🚌</div>',
-            className: 'bus-marker',
-            iconSize: [30, 30]
+        // Create custom bus icon
+        function createBusIcon(busNumber, isSimulated) {
+            const bgColor = isSimulated ? '#FFA500' : '#2D5016';
+            const borderColor = isSimulated ? '#FF6B00' : '#FFD700';
+            
+            return L.divIcon({
+                html: `<div class="custom-bus-icon" style="background-color: ${bgColor}; border-color: ${borderColor};">🚌</div>`,
+                className: 'bus-marker-container',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+                popupAnchor: [0, -20]
+            });
+        }
+        
+        // Create enhanced popup content
+        function createPopupContent(bus) {
+            const timestamp = new Date(bus.timestamp).toLocaleTimeString();
+            const simBadge = bus.is_simulated ? 
+                '<span style="background: #FFA500; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75em; margin-left: 10px;">SIMULATION</span>' : 
+                '<span style="background: #4CAF50; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75em; margin-left: 10px;">LIVE</span>';
+            
+            const etaDisplay = bus.eta_minutes !== null ? 
+                `<span class="eta-badge">${bus.eta_minutes} min</span>` : 
+                '<span style="color: #999;">N/A</span>';
+            
+            const followBtnText = followingBusId === bus.bus_id ? 'Stop Following' : 'Follow This Bus';
+            const followBtnClass = followingBusId === bus.bus_id ? 'following' : '';
+            
+            return `
+                <div class="bus-popup">
+                    <div class="popup-header">
+                        <div class="popup-bus-number">🚌 ${bus.bus_number} ${simBadge}</div>
+                        <div class="popup-route">📍 ${bus.route}</div>
+                    </div>
+                    <div class="popup-body">
+                        <div class="popup-info-row">
+                            <span class="popup-label">Bus ID:</span>
+                            <span class="popup-value">#${bus.bus_id}</span>
+                        </div>
+                        <div class="popup-info-row">
+                            <span class="popup-label">Next Stop:</span>
+                            <span class="popup-value">${bus.next_stop}</span>
+                        </div>
+                        <div class="popup-info-row">
+                            <span class="popup-label">ETA:</span>
+                            ${etaDisplay}
+                        </div>
+                        <div class="popup-info-row">
+                            <span class="popup-label">Speed:</span>
+                            <span class="popup-value">${bus.speed.toFixed(1)} km/h</span>
+                        </div>
+                        <div class="popup-info-row">
+                            <span class="popup-label">Distance:</span>
+                            <span class="popup-value">${bus.distance_to_next_stop ? bus.distance_to_next_stop + ' km' : 'N/A'}</span>
+                        </div>
+                        <div class="popup-info-row">
+                            <span class="popup-label">Last Update:</span>
+                            <span class="popup-value">${timestamp}</span>
+                        </div>
+                        <button class="follow-btn ${followBtnClass}" onclick="toggleFollowBus(${bus.bus_id})">
+                            ${followBtnText}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Follow/Unfollow bus function
+        function toggleFollowBus(busId) {
+            if (followingBusId === busId) {
+                // Stop following
+                followingBusId = null;
+                if (followInterval) {
+                    clearInterval(followInterval);
+                    followInterval = null;
+                }
+                console.log('Stopped following bus');
+            } else {
+                // Start following
+                followingBusId = busId;
+                if (busMarkers[busId]) {
+                    map.setView(busMarkers[busId].getLatLng(), 15);
+                }
+                
+                // Auto-center on bus every 3 seconds
+                followInterval = setInterval(() => {
+                    if (followingBusId && busMarkers[followingBusId]) {
+                        map.panTo(busMarkers[followingBusId].getLatLng());
+                    }
+                }, 3000);
+                
+                console.log(`Following bus ${busId}`);
+            }
+            
+            // Update popup content for all buses
+            updateBusLocations();
+        }
+        
+        // Route filter change handler
+        document.getElementById('routeFilter').addEventListener('change', function(e) {
+            currentRouteFilter = e.target.value;
+            updateBusLocations();
         });
+        
+        // Filter and focus on specific route
+        function filterAndFocusRoute(routeId) {
+            document.getElementById('routeFilter').value = routeId;
+            currentRouteFilter = routeId;
+            updateBusLocations();
+            
+            // Focus on the bus of this route if available
+            setTimeout(() => {
+                const busOfRoute = Object.values(busMarkers).find(marker => {
+                    // This is a simplified check; in production, you'd track bus-route mapping
+                    return true;
+                });
+                if (busOfRoute) {
+                    map.setView(busOfRoute.getLatLng(), 14);
+                }
+            }, 500);
+        }
         
         // Fetch and update bus locations
         async function updateBusLocations() {
             try {
-                const response = await fetch('/api/map-data/');
+                // Use the new user panel API endpoint
+                let apiUrl = '/api/user/map-data/';
+                if (currentRouteFilter) {
+                    apiUrl += `?route=${currentRouteFilter}`;
+                }
+                
+                const response = await fetch(apiUrl);
                 const data = await response.json();
                 
                 // Update mode badge
@@ -293,6 +658,9 @@
                     modeBadge.style.color = 'white';
                 }
                 
+                // Update stats
+                document.getElementById('activeBusCount').textContent = data.total_active;
+                
                 // Clear old markers that are no longer active
                 const activeBusIds = new Set(data.buses.map(bus => bus.bus_id));
                 Object.keys(busMarkers).forEach(busId => {
@@ -305,40 +673,41 @@
                 // Update or create markers for active buses
                 data.buses.forEach(bus => {
                     const position = [bus.latitude, bus.longitude];
+                    const icon = createBusIcon(bus.bus_number, bus.is_simulated);
                     
                     if (busMarkers[bus.bus_id]) {
                         // Update existing marker
                         busMarkers[bus.bus_id].setLatLng(position);
+                        busMarkers[bus.bus_id].setIcon(icon);
                         busMarkers[bus.bus_id].setPopupContent(createPopupContent(bus));
                     } else {
                         // Create new marker
-                        const marker = L.marker(position, { icon: busIcon })
+                        const marker = L.marker(position, { icon: icon })
                             .addTo(map)
-                            .bindPopup(createPopupContent(bus));
+                            .bindPopup(createPopupContent(bus), {
+                                maxWidth: 320,
+                                className: 'custom-popup'
+                            });
                         
+                        // Store bus data with marker for easy access
+                        marker.busData = bus;
                         busMarkers[bus.bus_id] = marker;
                     }
                 });
                 
+                // If following a bus, keep it centered
+                if (followingBusId && busMarkers[followingBusId]) {
+                    map.panTo(busMarkers[followingBusId].getLatLng());
+                }
+                
             } catch (error) {
                 console.error('Error fetching bus locations:', error);
+                document.getElementById('systemStatus').textContent = 'Error';
+                document.getElementById('systemStatus').style.color = '#dc3545';
             }
         }
         
-        function createPopupContent(bus) {
-            const timestamp = new Date(bus.timestamp).toLocaleTimeString();
-            const simBadge = bus.is_simulated ? '<span style="background: #FFD700; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">SIM</span>' : '';
-            
-            return `
-                <div style="min-width: 200px;">
-                    <h3 style="color: #2D5016; margin-bottom: 10px;">${bus.bus_number} ${simBadge}</h3>
-                    <p><strong>Route:</strong> ${bus.route}</p>
-                    <p><strong>Speed:</strong> ${bus.speed.toFixed(1)} km/h</p>
-                    <p><strong>Updated:</strong> ${timestamp}</p>
-                </div>
-            `;
-        }
-        
+        // Focus on specific bus (legacy function for backward compatibility)
         function focusBus(busId) {
             if (busMarkers[busId]) {
                 map.setView(busMarkers[busId].getLatLng(), 15);
@@ -351,6 +720,11 @@
         
         // Update every 10 seconds
         setInterval(updateBusLocations, 10000);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            map.invalidateSize();
+        });
     </script>
 </body>
 </html>
