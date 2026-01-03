@@ -200,37 +200,7 @@ class DriverRouteSessionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])
-def bus_map_data(request):
-    """
-    Endpoint for the user map view - returns all active buses with their current locations
-    """
-    recent_time = timezone.now() - timedelta(minutes=5)
-    buses = BusRoute.objects.all()
-    map_data = []
-    
-    for bus in buses:
-        location = BusLocation.objects.filter(
-            bus=bus,
-            is_active=True,
-            timestamp__gte=recent_time
-        ).first()
-        
-        if location:
-            map_data.append({
-                'bus_id': bus.id,
-                'bus_number': bus.bus_number,
-                'route': bus.route,
-                'latitude': location.latitude,
-                'longitude': location.longitude,
-                'speed': location.speed,
-                'timestamp': location.timestamp,
-                'is_simulated': location.is_simulated,
-            })
-    
-    return Response({
-        'buses': map_data,
-        'total_active': len(map_data)
-    })
+# NOTE: bus_map_data() has been moved to buses.user_panel.api_views
+# This keeps user-centric code organized within the user_panel module
+# Legacy compatibility is maintained in api_urls.py
 

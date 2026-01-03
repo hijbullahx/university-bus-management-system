@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Schedules - IUBAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --iubat-green: #4CAF50;
+            --iubat-dark-green: #388E3C;
+            --text-dark: #212121;
+            --text-gray: #757575;
+            --bg-light: #F5F5F5;
+            --white: #FFFFFF;
+            --on-time: #4CAF50;
+            --delayed: #F44336;
+            --passed: #9E9E9E;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-dark-green));
+            color: var(--white);
+            padding: 16px 20px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            background: var(--white);
+            padding: 12px 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--iubat-green);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        /* Main Content */
+        .content {
+            padding: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .info-badge {
+            background: var(--white);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .schedule-type {
+            font-weight: 600;
+            color: var(--iubat-green);
+        }
+
+        .last-updated {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        /* Route Cards */
+        .route-card {
+            background: var(--white);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .route-card.expanded {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .route-header {
+            padding: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.05), transparent);
+            border-left: 4px solid var(--iubat-green);
+        }
+
+        .route-header:hover {
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.1), transparent);
+        }
+
+        .route-info {
+            flex: 1;
+        }
+
+        .bus-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--iubat-dark-green);
+            margin-bottom: 4px;
+        }
+
+        .route-destination {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+        }
+
+        .expand-icon {
+            font-size: 1.5rem;
+            color: var(--iubat-green);
+            transition: transform 0.3s;
+        }
+
+        .route-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .route-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .route-status.active {
+            background: #E8F5E9;
+            color: var(--on-time);
+        }
+
+        .route-status.inactive {
+            background: #FAFAFA;
+            color: var(--text-gray);
+        }
+
+        /* Stops List */
+        .stops-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .route-card.expanded .stops-container {
+            max-height: 2000px;
+        }
+
+        .stop-item {
+            padding: 16px;
+            border-top: 1px solid #F0F0F0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stop-item:last-child {
+            border-bottom: none;
+        }
+
+        .stop-info {
+            flex: 1;
+        }
+
+        .stop-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .scheduled-time {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .eta-container {
+            text-align: right;
+        }
+
+        .live-eta {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .eta-on-time {
+            color: var(--on-time);
+        }
+
+        .eta-delayed {
+            color: var(--delayed);
+        }
+
+        .eta-passed {
+            color: var(--passed);
+        }
+
+        .eta-inactive {
+            color: var(--text-gray);
+        }
+
+        .eta-now {
+            color: #FF9800;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .eta-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-gray);
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-gray);
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            text-decoration: none;
+            color: var(--text-gray);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--iubat-green);
+        }
+
+        .nav-item:hover {
+            color: var(--iubat-green);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--iubat-green);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">🚌 Bus Schedules</div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input 
+            type="text" 
+            class="search-input" 
+            id="searchInput" 
+            placeholder="🔍 Search routes or stops..."
+        >
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Info Badge -->
+        <div class="info-badge">
+            <div>
+                <span class="schedule-type">{{ active_schedule_type_display }}</span>
+            </div>
+            <div class="last-updated" id="lastUpdated">Loading...</div>
+        </div>
+
+        <!-- Routes Container -->
+        <div id="routesContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Loading schedules...</div>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <div class="no-results-icon">🔍</div>
+            <div>No routes or stops found</div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="{% url 'user_panel:map' %}" class="nav-item">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-label">Map</span>
+        </a>
+        <a href="{% url 'user_panel:schedules' %}" class="nav-item active">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Schedules</span>
+        </a>
+        <a href="{% url 'user_panel:home' %}" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+        </a>
+    </div>
+
+    <script>
+        let allRoutesData = [];
+        let updateInterval;
+
+        // Load schedule data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScheduleData();
+            // Update every 30 seconds
+            updateInterval = setInterval(loadScheduleData, 30000);
+            
+            // Setup search
+            document.getElementById('searchInput').addEventListener('input', filterRoutes);
+        });
+
+        async function loadScheduleData() {
+            try {
+                const response = await fetch('/buses/user/api/schedule-eta/');
+                const data = await response.json();
+                
+                allRoutesData = data.routes;
+                displayRoutes(allRoutesData);
+                updateLastUpdatedTime();
+                
+            } catch (error) {
+                console.error('Error loading schedule data:', error);
+                document.getElementById('routesContainer').innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">⚠️</div>
+                        <div>Error loading schedules. Please refresh.</div>
+                    </div>
+                `;
+            }
+        }
+
+        function displayRoutes(routes) {
+            const container = document.getElementById('routesContainer');
+            
+            if (routes.length === 0) {
+                container.innerHTML = '';
+                document.getElementById('noResults').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('noResults').style.display = 'none';
+            
+            container.innerHTML = routes.map(route => `
+                <div class="route-card" data-route-id="${route.id}">
+                    <div class="route-header" onclick="toggleRoute(${route.id})">
+                        <div class="route-info">
+                            <div class="bus-number">
+                                ${route.bus_number}
+                                <span class="route-status ${route.is_active ? 'active' : 'inactive'}">
+                                    ${route.is_active ? '🟢 Active' : '⚫ Inactive'}
+                                </span>
+                            </div>
+                            <div class="route-destination">${route.route}</div>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="stops-container">
+                        ${route.stops.map(stop => `
+                            <div class="stop-item">
+                                <div class="stop-info">
+                                    <div class="stop-name">${stop.name}</div>
+                                    <div class="scheduled-time">Scheduled: ${stop.scheduled_time}</div>
+                                </div>
+                                <div class="eta-container">
+                                    <div class="live-eta eta-${stop.eta_status}">${stop.eta}</div>
+                                    <div class="eta-label">Live ETA</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleRoute(routeId) {
+            const card = document.querySelector(`[data-route-id="${routeId}"]`);
+            card.classList.toggle('expanded');
+        }
+
+        function filterRoutes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayRoutes(allRoutesData);
+                return;
+            }
+            
+            const filteredRoutes = allRoutesData.filter(route => {
+                // Search in bus number and route name
+                const routeMatch = route.bus_number.toLowerCase().includes(searchTerm) || 
+                                   route.route.toLowerCase().includes(searchTerm);
+                
+                // Search in stop names
+                const stopMatch = route.stops.some(stop => 
+                    stop.name.toLowerCase().includes(searchTerm)
+                );
+                
+                return routeMatch || stopMatch;
+            });
+            
+            displayRoutes(filteredRoutes);
+        }
+
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            document.getElementById('lastUpdated').textContent = `Updated: ${timeString}`;
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

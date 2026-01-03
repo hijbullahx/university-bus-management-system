@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, include
 from . import views, views_admin
 from . import views_auth, views_home
 from . import views_admin_route, views_admin_route_edit, views_route_stopages, views_admin_shuttle, views_admin_shuttle_edit
@@ -12,12 +12,12 @@ urlpatterns = [
   path('login/', views_auth.unified_login, name='login'),
   path('logout/', views_auth.custom_logout, name='logout'),
   
-  # Home Page - Unified Interface
+  # User Panel - Public-facing routes
+  path('user/', include('buses.user_panel.urls', namespace='user_panel')),
+  
+  # Legacy routes (keeping for backward compatibility)
   path('', views_home.home_view, name='home'),
   path('home/', views_home.home_view, name='home'),
-  
-  # Public user routes
-  path('', views_user_map.user_map_view, name='home'),
   path('map/', views_user_map.user_map_view, name='user_map'),
   path('schedules/', views.bus_schedule_list, name='bus_schedule_list'),
   
