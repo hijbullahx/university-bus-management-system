@@ -17,5 +17,6 @@ urlpatterns = [
     
     # API Endpoints (AJAX)
     path('api/map-data/', views.bus_map_data, name='api_map_data'),
+    path('api/schedule-eta/', views.schedule_eta_api, name='api_schedule_eta'),
 ]
 

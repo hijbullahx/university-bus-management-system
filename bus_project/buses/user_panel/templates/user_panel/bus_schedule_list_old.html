@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>University Bus Schedules</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f9fbe7;
+        color: #234d20;
+      }
+      h1 {
+        color: #7cb342;
+        text-align: center;
+        letter-spacing: 2px;
+        text-shadow: 1px 1px 0 #fffde7, 2px 2px 0 #dcedc8;
+      }
+      .schedule-container {
+        background-color: #fffde7;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px #c5e1a5;
+        margin-bottom: 24px;
+        padding: 24px 20px 16px 20px;
+        border: 1.5px solid #c5e1a5;
+      }
+      .route-header {
+        background: linear-gradient(90deg, #dcedc8 60%, #fffde7 100%);
+        padding: 12px 10px;
+        border-radius: 7px;
+        margin-bottom: 15px;
+        border-left: 5px solid #7cb342;
+      }
+      .route-header h2 {
+        margin: 0;
+        color: #388e3c;
+        font-weight: bold;
+      }
+      .schedule-item {
+        border-bottom: 1px solid #c5e1a5;
+        padding: 10px 0 6px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .schedule-item:last-child {
+        border-bottom: none;
+      }
+      .time {
+        font-weight: bold;
+        color: #558b2f;
+        font-size: 1.1em;
+      }
+      .type {
+        font-size: 0.85em;
+        background-color: #dcedc8;
+        color: #388e3c;
+        padding: 3px 10px;
+        border-radius: 4px;
+        margin-left: 8px;
+        font-weight: bold;
+        box-shadow: 0 1px 2px #dcedc844;
+      }
+      .note {
+        font-size: 0.85em;
+        color: #558b2f;
+        margin-top: 5px;
+      }
+      .no-schedules {
+        text-align: center;
+        color: #388e3c;
+        padding: 20px;
+        background: #fffde7;
+        border-radius: 8px;
+        border: 1px dashed #dcedc8;
+      }
+      .current-time-display {
+        text-align: right;
+        font-size: 0.95em;
+        color: #388e3c;
+        margin-bottom: 10px;
+      }
+
+      /* Animated Admin Corner Button */
+      .admin-corner {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 1000;
+      }
+      .admin-btn {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #7cb342 60%, #fffde7 100%);
+        color: #234d20;
+        font-weight: bold;
+        padding: 12px 22px 12px 18px;
+        border-radius: 30px 8px 30px 8px;
+        box-shadow: 0 4px 16px #dcedc8;
+        border: none;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+      }
+      .admin-btn:hover {
+        transform: scale(1.07) rotate(-2deg);
+        box-shadow: 0 6px 24px #dcedc8;
+        background: linear-gradient(135deg, #388e3c 80%, #fffde7 100%);
+        color: #fff;
+      }
+
+      .bus-btn-full {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        justify-content: flex-start;
+        background: #fffde7;
+        color: #388e3c;
+        border: 2px solid #7cb342;
+        border-radius: 8px;
+        font-size: 1.1em;
+        font-weight: bold;
+        padding: 16px 22px;
+        margin-bottom: 18px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px #dcedc8;
+        transition: background 0.2s, color 0.2s;
+        text-align: left;
+        min-height: 56px;
+      }
+      .bus-btn-full:hover {
+        background: #dcedc8;
+        color: #234d20;
+      }
+      .bus-btn-full .route-name {
+        margin-left: 18px;
+        color: #234d20;
+        font-weight: normal;
+        font-size: 1em;
+      }
+      .shuttle-btn {
+        background: #7cb342 !important;
+        color: #fff !important;
+        border: 2px solid #388e3c !important;
+      }
+      .shuttle-btn:hover {
+        background: #388e3c !important;
+        color: #fff !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-corner">
+      <a href="/admin-panel/" class="admin-btn" title="Admin Panel">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:8px;"><circle cx="12" cy="12" r="10" fill="#fffbe6" stroke="#bfa100" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#bfa100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Admin
+      </a>
+    </div>
+    <h1>University Bus Schedules</h1>
+    <p
+      style="
+        text-align: center;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #007bff;
+      "
+    >
+    </p>
+
+    {% if routes %}
+      <div style="max-width: 600px; margin: 0 auto;">
+        {% for route in routes %}
+          {% if not route.is_shuttle %}
+            <a href="{% url 'buses:route_stopages_detail' route.id %}" class="bus-btn-full" style="display:block; text-decoration:none; width:100%; margin-bottom:18px;">
+              {{ route.bus_number }}<span class="route-name"> {{ route.route }}</span>
+            </a>
+          {% endif %}
+        {% endfor %}
+        {% for route in routes %}
+          {% if route.is_shuttle %}
+            <div style="margin-bottom: 24px;">
+              <a href="{% url 'buses:route_stopages_detail' route.id %}" class="bus-btn-full shuttle-btn" style="display:block; text-decoration:none; width:100%; margin-bottom:8px;">
+                {{ route.bus_number }}<span class="route-name"> {{ route.route }}</span>
+              </a>
+              {# Table removed: now only shown in detail page #}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="no-schedules">
+        No bus routes defined yet. Please add them via the
+        <a href="/admin-panel/">admin panel</a>.
+      </p>
+    {% endif %}
+
+  <!-- Modal for route details -->
+  <!-- Modal removed: not used anymore -->
+  <script>
+    function showRouteDetails(btn) {
+      var details = btn.getAttribute('data-details');
+      try {
+        var data = JSON.parse(details);
+        document.getElementById('modalBusNumber').innerText = 'Bus ' + data.bus_number;
+        document.getElementById('modalRouteName').innerText = 'Route: ' + data.route;
+        document.getElementById('modalStopageCount').innerText = 'Total Stopages: ' + data.stopage_count;
+        document.getElementById('modalUltimatePickup').innerText = data.ultimate_pickup ? ('Ultimate Pick-up: ' + data.ultimate_pickup) : '';
+        document.getElementById('modalUltimateDrop').innerText = data.ultimate_drop ? ('Ultimate Drop: ' + data.ultimate_drop) : '';
+        document.getElementById('routeModal').style.display = 'block';
+      } catch (e) {
+        alert('Could not load route details.');
+      }
+    }
+    function closeRouteModal() {
+      document.getElementById('routeModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+      var modal = document.getElementById('routeModal');
+      if (event.target == modal) {
+        closeRouteModal();
+      }
+    }
+  </script>
+  </body>
+</html>
