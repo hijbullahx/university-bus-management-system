@@ -4,6 +4,8 @@ from . import views, views_admin
 from . import views_auth, views_home
 from . import views_admin_route, views_admin_route_edit, views_route_stopages, views_admin_shuttle, views_admin_shuttle_edit
 from . import views_user_map, views_driver, views_admin_dashboard
+from .authority import views_authority, views_authority_dashboard, views_authority_reports
+from . import views_admin_shuttle_delete
 
 app_name = 'buses' # Define the app namespace
 
@@ -34,6 +36,10 @@ urlpatterns = [
   path('admin-dashboard/live-tracking/', views_admin_dashboard.admin_live_tracking, name='admin_live_tracking'),
   path('admin-dashboard/manage-issues/', views_admin_dashboard.admin_manage_issues, name='admin_manage_issues'),
   path('admin-dashboard/manage-notifications/', views_admin_dashboard.admin_manage_notifications, name='admin_manage_notifications'),
+  path('authority/global-settings/', views_authority.global_settings, name='global_settings'),
+  path('authority/dashboard/', views_authority_dashboard.authority_dashboard, name='authority_dashboard'),
+  path('authority/reports/', views_authority_reports.reports_analytics, name='authority_reports'),
+  path('authority/reports/export-pdf/', views_authority_reports.export_report_pdf, name='export_report_pdf'),
   
   # Legacy admin panel routes
   path('admin-panel/', views_admin.admin_dashboard, name='custom_admin_dashboard'),
@@ -44,6 +50,6 @@ urlpatterns = [
   path('admin-panel/create-shuttle-route/', views_admin_shuttle.create_shuttle_route, name='custom_create_shuttle_route'),
   path('admin-panel/edit-shuttle-route/<int:route_id>/', views_admin_shuttle_edit.edit_shuttle_route, name='custom_edit_shuttle_route'),
   path('admin-panel/delete-shuttle-route/<int:route_id>/',
-       __import__('buses.views_admin_shuttle_delete').views_admin_shuttle_delete.delete_shuttle_route,
+       views_admin_shuttle_delete.delete_shuttle_route,
        name='custom_delete_shuttle_route'),
 ]

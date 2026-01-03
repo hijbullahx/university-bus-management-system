@@ -38,7 +38,10 @@ def unified_login(request):
 
 def redirect_based_on_role(user):
     """Helper function to redirect users to unified home page"""
-    # Everyone goes to the unified home page
+    if hasattr(user, 'profile'):
+        if user.profile.role == 'AUTHORITY':
+            return redirect('buses:authority_dashboard')
+    # Everyone else goes to the unified home page
     # Navigation tabs will adapt based on their role
     return redirect('buses:home')
 
