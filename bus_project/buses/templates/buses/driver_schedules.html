@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - IUBAT Bus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --iubat-green: #2D5016;
+            --iubat-yellow: #FFD700;
+            --iubat-light-green: #4A7C2A;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .nav-tabs {
+            background: white;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            gap: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-tab:hover {
+            color: var(--iubat-green);
+            background: #f9f9f9;
+        }
+
+        .nav-tab.active {
+            color: var(--iubat-green);
+            border-bottom-color: var(--iubat-green);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background: var(--iubat-green);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: var(--iubat-light-green);
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .schedule-container {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .route-section {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .route-header {
+            background: linear-gradient(135deg, var(--iubat-green), var(--iubat-light-green));
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .route-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .route-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .schedule-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-item:hover {
+            background: #f9f9f9;
+        }
+
+        .schedule-time {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 200px;
+        }
+
+        .time-badge {
+            background: var(--iubat-green);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .schedule-route {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .schedule-route-name {
+            font-weight: bold;
+            color: var(--iubat-green);
+            font-size: 1.05rem;
+        }
+
+        .schedule-route-stops {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .assigned-badge {
+            background: var(--iubat-yellow);
+            color: var(--iubat-green);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .current-time {
+            background: white;
+            padding: 15px 20px;
+            text-align: center;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .schedule-time {
+                width: 100%;
+            }
+
+            .nav-tabs {
+                overflow-x: auto;
+            }
+
+            .nav-tab {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>📅 Driver Schedules</h1>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'buses:driver_dashboard' %}" class="btn">← Back to Dashboard</a>
+                <a href="{% url 'buses:logout' %}" class="btn">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="back-btn">
+            <a href="{% url 'buses:driver_dashboard' %}" class="btn btn-small">← Back</a>
+        </div>
+
+        <div class="nav-tabs">
+            <a href="{% url 'buses:driver_dashboard' %}" class="nav-tab">📊 Dashboard</a>
+            <a href="{% url 'buses:driver_schedules' %}" class="nav-tab active">📅 Schedules</a>
+            <a href="{% url 'buses:driver_start_route' %}" class="nav-tab">🚀 Start Route</a>
+            <a href="{% url 'buses:driver_report_issue' %}" class="nav-tab">⚠️ Report Issue</a>
+        </div>
+
+        <div class="schedule-container">
+            <div class="current-time">
+                <strong>Current Time (Dhaka):</strong> {{ current_time|date:"M d, Y • h:i A" }}
+                <br>
+                <small>Active Schedule Type: <strong>{{ active_schedule_type_display }}</strong></small>
+            </div>
+
+            {% if assigned_bus %}
+            <div style="background: #e8f5e9; padding: 15px 20px; margin-bottom: 20px; border-radius: 6px; border-left: 4px solid var(--iubat-green);">
+                <strong>✓ Your Assigned Bus:</strong> {{ assigned_bus.bus_number }} - {{ assigned_bus.route }}
+            </div>
+            {% endif %}
+
+            {% if routes %}
+                {% for route in routes %}
+                    {% if route.schedules.all %}
+                    <div class="route-section">
+                        <div class="route-header">
+                            <div>
+                                <div class="route-title">🚌 {{ route.bus_number }}</div>
+                                <div class="route-subtitle">{{ route.route }}</div>
+                            </div>
+                            {% if assigned_bus == route %}
+                            <span class="assigned-badge">✓ YOUR BUS</span>
+                            {% endif %}
+                        </div>
+
+                        {% for schedule in route.schedules.all %}
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <div class="time-badge">{{ schedule.departure_time|time:"H:i" }}</div>
+                                <div>
+                                    <div style="color: #666; font-size: 0.85rem;">Departs</div>
+                                </div>
+                            </div>
+
+                            <div class="schedule-route">
+                                <div class="schedule-route-name">{{ route.route }}</div>
+                                {% if route.stopages.all %}
+                                <div class="schedule-route-stops">
+                                    Stops:
+                                    {% for stopage in route.stopages.all %}
+                                        {{ stopage.name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h2>No schedules available</h2>
+                    <p>Check back later for updated schedules.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
