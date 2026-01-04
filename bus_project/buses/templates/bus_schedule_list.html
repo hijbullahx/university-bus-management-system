@@ -152,8 +152,8 @@
     </style>
   </head>
   <body>
-    <div class="admin-corner">
-      <a href="/admin-panel/" class="admin-btn" title="Admin Panel">
+    <div class="admin-corner" style="display: none;">
+      <a href="/admin/" class="admin-btn" title="Admin Panel">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:8px;"><circle cx="12" cy="12" r="10" fill="#fffbe6" stroke="#bfa100" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#bfa100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Admin
       </a>
@@ -167,32 +167,51 @@
         color: #007bff;
       "
     >
+      <span style="background: #dcedc8; padding: 8px 16px; border-radius: 6px; display: inline-block; color: #388e3c;">
+        📅 Currently Showing: <strong>{{ active_schedule_type_display }}</strong> Schedule
+      </span>
     </p>
 
     {% if routes %}
-      <div style="max-width: 600px; margin: 0 auto;">
+      <div style="max-width: 1000px; margin: 0 auto;">
+        <div style="background: #f0f7f0; border-left: 4px solid #388e3c; padding: 12px 16px; margin-bottom: 20px; border-radius: 4px; font-size: 0.9em; color: #388e3c;">
+          <strong>📌 Note:</strong> This schedule is dynamically updated based on the active schedule type set by administrators. When the schedule type changes in the admin panel, the displayed schedules will automatically update.
+        </div>
         {% for route in routes %}
-          {% if not route.is_shuttle %}
-            <a href="{% url 'buses:route_stopages_detail' route.id %}" class="bus-btn-full" style="display:block; text-decoration:none; width:100%; margin-bottom:18px;">
-              {{ route.bus_number }}<span class="route-name"> {{ route.route }}</span>
-            </a>
-          {% endif %}
-        {% endfor %}
-        {% for route in routes %}
-          {% if route.is_shuttle %}
-            <div style="margin-bottom: 24px;">
-              <a href="{% url 'buses:route_stopages_detail' route.id %}" class="bus-btn-full shuttle-btn" style="display:block; text-decoration:none; width:100%; margin-bottom:8px;">
-                {{ route.bus_number }}<span class="route-name"> {{ route.route }}</span>
+          {% if route.schedules.all %}
+          <div class="schedule-container">
+            <div class="route-header">
+              <a href="{% url 'buses:route_stopages_detail' route.id %}" style="text-decoration: none; color: inherit;">
+                <h2 style="cursor: pointer; transition: all 0.3s; margin: 0;">
+                  🚌 {{ route.bus_number }} - {{ route.route }}
+                  <span style="font-size: 0.8em; opacity: 0.8; margin-left: 10px;">Click to see full route & stopages →</span>
+                </h2>
               </a>
-              {# Table removed: now only shown in detail page #}
             </div>
+
+            {% if route.schedules.all %}
+              {% for schedule in route.schedules.all %}
+              <div class="schedule-item" style="cursor: pointer; transition: background 0.2s;" onclick="window.location='{% url 'buses:route_stopages_detail' route.id %}';">
+                <span class="time">
+                  ⏰ Departs: <strong>{{ schedule.departure_time|time:"H:i" }}</strong>
+                  {% if schedule.arrival_time %}
+                    | Arrives: <strong>{{ schedule.arrival_time|time:"H:i" }}</strong>
+                  {% endif %}
+                </span>
+                <span class="type">{{ schedule.get_route_type_display }}</span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="no-schedules">No schedules available for this route.</div>
+            {% endif %}
+          </div>
           {% endif %}
         {% endfor %}
       </div>
     {% else %}
       <p class="no-schedules">
-        No bus routes defined yet. Please add them via the
-        <a href="/admin-panel/">admin panel</a>.
+        No bus schedules defined yet. Please add them via the
+        <a href="/admin/">admin panel</a>.
       </p>
     {% endif %}
 

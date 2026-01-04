@@ -1,75 +1,243 @@
 {% extends 'base.html' %}
 {% block content %}
-<div style="max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #bfa100; margin-bottom: 24px;">{{ route.bus_number }} <span style="color:#bfa100; font-weight:normal;">({{ route.route }})</span></h2>
-        {% if route.is_shuttle %}
-                <div style="background:#f7e9b0; border-radius:8px; padding:10px 16px; margin-bottom: 18px;">
-                    <table style="width:100%; border-collapse:collapse;">
-                        <thead>
-                            <tr style="background:#fffbe6;">
-                                <th style="padding:6px 8px; text-align:left; color:#bfa100;">Trip</th>
-                                <th style="padding:6px 8px; text-align:left; color:#bfa100;">Campus</th>
-                                <th style="padding:6px 8px; text-align:left; color:#bfa100;">{{ route.route }}</th>
-                            </tr>
-                        </thead>
-                        <tbody id="shuttle-table-{{ route.id }}"></tbody>
-                    </table>
-                    <script type="application/json" id="shuttle-json-{{ route.id }}">{{ route.notes|safe }}</script>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var jsonTag = document.getElementById('shuttle-json-{{ route.id }}');
-                            var tbody = document.getElementById('shuttle-table-{{ route.id }}');
-                            var data = [];
-                            if (jsonTag && jsonTag.textContent.trim()) {
-                                var raw = jsonTag.textContent.trim();
-                                try {
-                                    if (raw[0] === '[' && raw[raw.length-1] === ']') {
-                                        data = JSON.parse(raw.replace(/'/g, '"'));
-                                    }
-                                } catch (e) { data = []; }
-                            }
-                            if (tbody && Array.isArray(data)) {
-                                if (data.length === 0) {
-                                    var row = document.createElement('tr');
-                                    row.innerHTML = '<td colspan="3" style="text-align:center; color:#888;">No schedules set for this shuttle bus.</td>';
-                                    tbody.appendChild(row);
-                                } else {
-                                    data.forEach(function(item, idx) {
-                                        var trip = (idx+1).toString().padStart(2, '0');
-                                        var campus = item.campus_departure ? formatTime(item.campus_departure) : '—';
-                                        var center = item.center_station_departure ? formatTime(item.center_station_departure) : '—';
-                                        var row = document.createElement('tr');
-                                        row.innerHTML = '<td style="padding:6px 8px;">' + trip + '</td>' +
-                                                                     '<td style="padding:6px 8px;">' + campus + '</td>' +
-                                                                     '<td style="padding:6px 8px;">' + center + '</td>';
-                                        tbody.appendChild(row);
-                                    });
-                                }
-                            }
-                            function formatTime(t) {
-                                var parts = t.split(':');
-                                var hour = parseInt(parts[0], 10);
-                                var min = parts[1];
-                                var ampm = hour >= 12 ? 'PM' : 'AM';
-                                hour = hour % 12;
-                                if (hour === 0) hour = 12;
-                                return hour + ':' + min + ' ' + ampm;
-                            }
-                        });
-                    </script>
-                </div>
-        {% else %}
-                <ul style="list-style:none; padding:0;">
-                        {% for stop in stopages %}
-                                <li style="background:#fffbe6; border-radius:8px; margin-bottom:12px; padding:14px 18px; box-shadow:0 2px 8px #bfa10022; display:flex; justify-content:space-between; align-items:center;">
-                                        <span style="font-weight:bold; color:#bfa100;">{{ stop.name }}</span>
-                                        <span style="color:#333;">Pick-up: {{ stop.pickup_time|time:'h:i A' }}</span>
-                                </li>
-                        {% empty %}
-                                <li style="color:#888;">No stopages set for this route.</li>
-                        {% endfor %}
-                </ul>
-        {% endif %}
-        <a href="/" style="display:inline-block; margin-top:18px; color:#bfa100; text-decoration:underline;">&larr; Back to all buses</a>
+<style>
+  .route-detail-container {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  .route-detail-header {
+    background: linear-gradient(135deg, #7cb342 60%, #dcedc8 100%);
+    padding: 30px 20px;
+    color: #fff;
+    text-align: center;
+  }
+
+  .route-detail-header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    color: #234d20;
+    text-shadow: 1px 1px 0 #fffde7;
+  }
+
+  .route-detail-header p {
+    margin: 8px 0 0 0;
+    font-size: 1.1em;
+    color: #388e3c;
+  }
+
+  .stoppages-list {
+    padding: 30px 20px;
+  }
+
+  .stopage-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9fbe7;
+    border-left: 4px solid #7cb342;
+    border-radius: 6px;
+    transition: all 0.3s;
+  }
+
+  .stopage-item:hover {
+    background: #fffde7;
+    box-shadow: 0 2px 8px #c5e1a566;
+    transform: translateX(5px);
+  }
+
+  .stopage-number {
+    background: #7cb342;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+
+  .stopage-info {
+    flex: 1;
+  }
+
+  .stopage-name {
+    font-size: 1.05em;
+    font-weight: bold;
+    color: #388e3c;
+    margin-bottom: 5px;
+  }
+
+  .stopage-time {
+    font-size: 0.95em;
+    color: #558b2f;
+    font-weight: bold;
+    background: #dcedc8;
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .route-path {
+    padding: 20px;
+    background: #f0f7f0;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #388e3c;
+  }
+
+  .route-path p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #388e3c;
+  }
+
+  .shuttle-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .shuttle-table thead tr {
+    background: #7cb342;
+    color: white;
+  }
+
+  .shuttle-table th,
+  .shuttle-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .shuttle-table tbody tr:hover {
+    background: #f9fbe7;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #7cb342;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s;
+  }
+
+  .back-link:hover {
+    background: #388e3c;
+    transform: translateX(-5px);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+  }
+</style>
+
+<div class="route-detail-container">
+  <div class="route-detail-header">
+    <h1>🚌 {{ route.bus_number }}</h1>
+    <p>Route: {{ route.route }}</p>
+  </div>
+
+  <div class="stoppages-list">
+    {% if route.is_shuttle %}
+      <div class="route-path">
+        <p><strong>📍 Shuttle Route Type</strong></p>
+        <p>This shuttle bus operates between Campus and {{ route.route }}</p>
+      </div>
+
+      <table class="shuttle-table">
+        <thead>
+          <tr>
+            <th>Trip #</th>
+            <th>From Campus</th>
+            <th>To {{ route.route }}</th>
+          </tr>
+        </thead>
+        <tbody id="shuttle-table-{{ route.id }}"></tbody>
+      </table>
+      <script type="application/json" id="shuttle-json-{{ route.id }}">{{ route.notes|safe }}</script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var jsonTag = document.getElementById('shuttle-json-{{ route.id }}');
+          var tbody = document.getElementById('shuttle-table-{{ route.id }}');
+          var data = [];
+          if (jsonTag && jsonTag.textContent.trim()) {
+            var raw = jsonTag.textContent.trim();
+            try {
+              if (raw[0] === '[' && raw[raw.length-1] === ']') {
+                data = JSON.parse(raw.replace(/'/g, '"'));
+              }
+            } catch (e) { data = []; }
+          }
+          if (tbody && Array.isArray(data)) {
+            if (data.length === 0) {
+              var row = document.createElement('tr');
+              row.innerHTML = '<td colspan="3" style="text-align:center; color:#888;">No schedules set for this shuttle bus.</td>';
+              tbody.appendChild(row);
+            } else {
+              data.forEach(function(item, idx) {
+                var trip = (idx+1).toString().padStart(2, '0');
+                var campus = item.campus_departure ? formatTime(item.campus_departure) : '—';
+                var center = item.center_station_departure ? formatTime(item.center_station_departure) : '—';
+                var row = document.createElement('tr');
+                row.innerHTML = '<td style="font-weight: bold;">#' + trip + '</td>' +
+                               '<td>' + campus + '</td>' +
+                               '<td>' + center + '</td>';
+                tbody.appendChild(row);
+              });
+            }
+          }
+          function formatTime(t) {
+            var parts = t.split(':');
+            var hour = parseInt(parts[0], 10);
+            var min = parts[1];
+            var ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12;
+            if (hour === 0) hour = 12;
+            return hour + ':' + min + ' ' + ampm;
+          }
+        });
+      </script>
+    {% else %}
+      <div class="route-path">
+        <p><strong>📍 Full Route Path</strong></p>
+        <p>Complete route with all stoppages from start to finish</p>
+      </div>
+
+      {% if stopages %}
+        {% for stop in stopages %}
+          <div class="stopage-item">
+            <div class="stopage-number">{{ forloop.counter }}</div>
+            <div class="stopage-info">
+              <div class="stopage-name">{{ stop.name }}</div>
+              <span class="stopage-time">⏰ {{ stop.pickup_time|time:'H:i' }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <p>📋 No stopages set for this route.</p>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div style="padding: 0 20px 20px 20px;">
+    <a href="{% url 'buses:bus_schedule_list' %}" class="back-link">← Back to Schedules</a>
+  </div>
 </div>
+
 {% endblock %}

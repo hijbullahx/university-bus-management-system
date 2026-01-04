@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="create-user-container">
+  <div class="create-user-box">
+    <h1>Create New User</h1>
+    <p class="subtitle">Add a new driver or regular user to the system</p>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" class="create-user-form">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="error-text">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="error-text">{{ form.email.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+          {{ form.first_name }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div class="error-text">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.confirm_password.id_for_label }}" class="form-label">{{ form.confirm_password.label }}</label>
+        {{ form.confirm_password }}
+        {% if form.confirm_password.errors %}
+          <div class="error-text">{{ form.confirm_password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.role.id_for_label }}" class="form-label">{{ form.role.label }}</label>
+        {{ form.role }}
+        {% if form.role.errors %}
+          <div class="error-text">{{ form.role.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors.0 }}
+        </div>
+      {% endif %}
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create User</button>
+        <a href="{% url 'buses:custom_admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrastyle %}
+<style>
+.create-user-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.create-user-box {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(191, 161, 0, 0.15);
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.create-user-box h1 {
+  color: #bfa100;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 28px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.create-user-form .form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.create-user-form input,
+.create-user-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.create-user-form input:focus,
+.create-user-form select:focus {
+  outline: none;
+  border-color: #bfa100;
+  box-shadow: 0 0 0 3px rgba(191, 161, 0, 0.1);
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: #bfa100;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #a88c00;
+}
+
+.btn-secondary {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #d0d0d0;
+}
+
+@media (max-width: 600px) {
+  .create-user-box {
+    padding: 25px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}

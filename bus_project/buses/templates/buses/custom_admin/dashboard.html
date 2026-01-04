@@ -2,6 +2,13 @@
 {% block content %}
 <div class="custom-admin-dashboard">
   <h1>IUBAT Bus Admin Panel</h1>
+
+  <div class="admin-section">
+    <h2>User Management</h2>
+    <a href="{% url 'buses:custom_create_user' %}" class="btn btn-primary">+ Create New User</a>
+    <p class="section-description">Create drivers and regular users who can login to the system.</p>
+  </div>
+
   <div class="admin-section">
     <h2>Routes</h2>
     <a href="{% url 'buses:custom_create_route' %}" class="btn btn-primary">+ Create New Route</a>
@@ -55,6 +62,11 @@
 }
 .admin-section h2 {
   color: #333;
+  margin-bottom: 16px;
+}
+.section-description {
+  color: #666;
+  font-size: 14px;
   margin-bottom: 16px;
 }
 .btn {
