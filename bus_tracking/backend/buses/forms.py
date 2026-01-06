@@ -20,14 +20,11 @@ class BusForm(forms.ModelForm):
 class BusAssignmentForm(forms.ModelForm):
     class Meta:
         model = BusAssignment
-        fields = ['bus', 'driver', 'route', 'date', 'shift_start', 'shift_end']
+        fields = ['bus', 'driver', 'route']
         widgets = {
             'bus': forms.Select(attrs={'class': 'form-select'}),
             'driver': forms.Select(attrs={'class': 'form-select'}),
             'route': forms.Select(attrs={'class': 'form-select'}),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'shift_start': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
-            'shift_end': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         }
 
     def __init__(self, *args, **kwargs):

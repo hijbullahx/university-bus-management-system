@@ -106,6 +106,11 @@ def assignment_list(request):
 @login_required
 @admin_required
 def assignment_create(request):
+    bus_id = request.GET.get('bus')
+    bus = None
+    if bus_id:
+        bus = get_object_or_404(Bus, pk=bus_id)
+    
     if request.method == 'POST':
         form = BusAssignmentForm(request.POST)
         if form.is_valid():
@@ -113,6 +118,13 @@ def assignment_create(request):
             messages.success(request, 'Assignment created successfully.')
             return redirect('buses:assignment_list')
     else:
-        form = BusAssignmentForm()
+        initial = {}
+        if bus:
+            initial['bus'] = bus
+        form = BusAssignmentForm(initial=initial)
     
-    return render(request, 'buses/assignment_form.html', {'form': form, 'title': 'Create Assignment'})
+    return render(request, 'buses/assignment_form.html', {
+        'form': form, 
+        'title': 'Create Assignment',
+        'selected_bus': bus
+    })
