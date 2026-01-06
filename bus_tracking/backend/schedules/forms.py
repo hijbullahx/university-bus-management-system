@@ -5,7 +5,7 @@ class RouteForm(forms.ModelForm):
     class Meta:
         model = Route
         fields = ['name', 'description', 'route_type', 'service_days', 'origin_name', 'destination_name', 
-                  'color', 'is_active', 'is_published', 'total_distance_km', 'estimated_duration_mins']
+                  'is_active', 'is_published', 'total_distance_km', 'estimated_duration_mins']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Campus - Azampur - Campus'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
@@ -13,7 +13,6 @@ class RouteForm(forms.ModelForm):
             'service_days': forms.Select(attrs={'class': 'form-select'}),
             'origin_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Campus'}),
             'destination_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Azampur'}),
-            'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'total_distance_km': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),

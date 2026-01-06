@@ -19,7 +19,7 @@ class Route(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     route_type = models.CharField(max_length=20, choices=ROUTE_TYPE_CHOICES, default='shuttle')
-    color = models.CharField(max_length=7, default='#007bff')
+    color = models.CharField(max_length=7, default='#ffc107')  # Yellow
     is_active = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False, help_text='Published routes are visible to users')
     total_distance_km = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

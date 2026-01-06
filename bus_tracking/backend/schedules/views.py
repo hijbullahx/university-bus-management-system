@@ -62,7 +62,6 @@ def route_create(request):
                 name=request.POST.get('long_route_name', ''),
                 description=request.POST.get('long_description', ''),
                 route_type='long',
-                color=request.POST.get('long_color', '#dc3545'),
                 service_days=service_days,
                 custom_days=custom_days,
                 destination_name=request.POST.get('final_destination', ''),
@@ -146,7 +145,6 @@ def route_edit(request, pk):
             route.name = request.POST.get('long_route_name', route.name)
             route.description = request.POST.get('long_description', '')
             route.route_type = 'long'
-            route.color = request.POST.get('long_color', '#dc3545')
             route.service_days = request.POST.get('long_service_days', 'sat-thu')
             route.destination_name = request.POST.get('final_destination', '')
             # Handle custom days for Long Road

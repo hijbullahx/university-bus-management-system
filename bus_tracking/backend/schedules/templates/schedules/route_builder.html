@@ -136,13 +136,9 @@
                         {{ form.name }}
                         <div class="form-text">e.g., Campus – Azampur – Campus</div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label class="form-label">Service Days</label>
                         {{ form.service_days }}
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Route Color</label>
-                        {{ form.color }}
                     </div>
                 </div>
                 <!-- Custom Days Selection -->
@@ -293,7 +289,7 @@
                                value="{{ form.instance.name }}">
                         <div class="form-text">Describe the route path</div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label class="form-label">Service Days</label>
                         <select name="long_service_days" class="form-select">
                             <option value="sat-thu" {% if form.instance.service_days == 'sat-thu' %}selected{% endif %}>Saturday - Thursday</option>
@@ -302,11 +298,6 @@
                             <option value="all" {% if form.instance.service_days == 'all' %}selected{% endif %}>All Days</option>
                             <option value="custom" {% if form.instance.service_days == 'custom' %}selected{% endif %}>Custom</option>
                         </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Route Color</label>
-                        <input type="color" name="long_color" class="form-control form-control-color w-100" 
-                               value="{{ form.instance.color|default:'#dc3545' }}">
                     </div>
                 </div>
                 <div class="row g-3 mt-2">
