@@ -538,8 +538,9 @@ def publish_route(request, pk):
     
     if request.method == 'POST':
         route.is_published = True
+        route.is_active = True
         route.save()
-        messages.success(request, f'Route "{route.name}" has been published.')
+        messages.success(request, f'Route "{route.name}" has been published and marked as active.')
     
     return redirect('schedules:route_detail', pk=pk)
 
@@ -552,7 +553,8 @@ def unpublish_route(request, pk):
     
     if request.method == 'POST':
         route.is_published = False
+        route.is_active = False
         route.save()
-        messages.success(request, f'Route "{route.name}" has been unpublished.')
+        messages.success(request, f'Route "{route.name}" has been unpublished and marked as inactive.')
     
     return redirect('schedules:route_detail', pk=pk)
