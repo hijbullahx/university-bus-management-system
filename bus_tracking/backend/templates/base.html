@@ -357,12 +357,14 @@
                 </li>
                 {% endif %}
                 
+                {% if not user.is_admin_user %}
                 <hr>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'reports:submit_feedback' %}">
                         <i class="fas fa-comment-dots me-2"></i>Submit Feedback
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </nav>
         {% endif %}
