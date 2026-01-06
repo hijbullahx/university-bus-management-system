@@ -62,9 +62,9 @@ class BusAssignment(models.Model):
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='assignments')
     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bus_assignments')
     route = models.ForeignKey('schedules.Route', on_delete=models.CASCADE, related_name='assignments')
-    date = models.DateField()
-    shift_start = models.TimeField()
-    shift_end = models.TimeField()
+    date = models.DateField(null=True, blank=True)
+    shift_start = models.TimeField(null=True, blank=True)
+    shift_end = models.TimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
@@ -72,11 +72,10 @@ class BusAssignment(models.Model):
 
     class Meta:
         db_table = 'bus_assignments'
-        ordering = ['-date', '-shift_start']
-        unique_together = ['bus', 'date', 'shift_start']
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.bus.bus_number} - {self.driver.username} ({self.date})"
+        return f"{self.bus.bus_number} - {self.driver.username}"
 
 
 class ETACalculation(models.Model):

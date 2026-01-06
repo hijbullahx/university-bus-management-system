@@ -114,8 +114,16 @@ def assignment_create(request):
     if request.method == 'POST':
         form = BusAssignmentForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Assignment created successfully.')
+            assignment = form.save()
+            # Update the bus's current route and deactivate previous assignments
+            bus_obj = assignment.bus
+            bus_obj.current_route = assignment.route
+            bus_obj.save()
+            # Deactivate other assignments for this bus
+            BusAssignment.objects.filter(bus=bus_obj, is_active=True).exclude(pk=assignment.pk).update(is_active=False)
+            messages.success(request, f'Bus {bus_obj.bus_number} assigned to route "{assignment.route.name}" with driver {assignment.driver.get_full_name() or assignment.driver.username}.')
+            if bus:
+                return redirect('buses:bus_list')
             return redirect('buses:assignment_list')
     else:
         initial = {}
