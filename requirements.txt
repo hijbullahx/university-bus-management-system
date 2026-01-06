@@ -15,10 +15,6 @@ python-decouple>=3.8
 # Development utilities
 django-extensions>=3.2.3
 
-# PDF Generation
-reportlab>=4.0.0
-xhtml2pdf>=0.2.11
-
 # Testing
 pytest>=7.4.0
 pytest-django>=4.5.0
