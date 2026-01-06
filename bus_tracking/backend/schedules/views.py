@@ -54,6 +54,9 @@ def route_create(request):
             route = form.save(commit=False)
             route.is_active = True
             route.is_published = True
+            # Handle custom days
+            if route.service_days == 'custom':
+                route.custom_days = request.POST.get('custom_days', '')
             route.save()
             
             # Handle Shuttle/Metro trips
@@ -94,6 +97,11 @@ def route_edit(request, pk):
             route = form.save(commit=False)
             route.is_active = True
             route.is_published = True
+            # Handle custom days
+            if route.service_days == 'custom':
+                route.custom_days = request.POST.get('custom_days', '')
+            else:
+                route.custom_days = ''
             route.save()
             
             # Handle Shuttle/Metro trips

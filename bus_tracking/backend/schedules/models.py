@@ -26,6 +26,7 @@ class Route(models.Model):
     estimated_duration_mins = models.PositiveIntegerField(null=True, blank=True)
     # Shuttle/Metro specific fields
     service_days = models.CharField(max_length=20, choices=SERVICE_DAYS_CHOICES, default='sat-thu', blank=True)
+    custom_days = models.CharField(max_length=50, blank=True, help_text='Comma-separated days: sat,sun,mon,tue,wed,thu,fri')
     origin_name = models.CharField(max_length=100, blank=True, help_text='Starting point (e.g., Campus)')
     destination_name = models.CharField(max_length=100, blank=True, help_text='End point (e.g., Azampur)')
     created_at = models.DateTimeField(auto_now_add=True)

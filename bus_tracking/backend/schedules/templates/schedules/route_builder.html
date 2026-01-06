@@ -132,6 +132,43 @@
                         {{ form.color }}
                     </div>
                 </div>
+                <!-- Custom Days Selection -->
+                <div class="row g-3 mt-2" id="customDaysRow" style="display: none;">
+                    <div class="col-12">
+                        <label class="form-label">Select Days</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="sat" id="day_sat">
+                                <label class="form-check-label" for="day_sat">Saturday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="sun" id="day_sun">
+                                <label class="form-check-label" for="day_sun">Sunday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="mon" id="day_mon">
+                                <label class="form-check-label" for="day_mon">Monday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="tue" id="day_tue">
+                                <label class="form-check-label" for="day_tue">Tuesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="wed" id="day_wed">
+                                <label class="form-check-label" for="day_wed">Wednesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="thu" id="day_thu">
+                                <label class="form-check-label" for="day_thu">Thursday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input custom-day-check" name="custom_day" value="fri" id="day_fri">
+                                <label class="form-check-label" for="day_fri">Friday</label>
+                            </div>
+                        </div>
+                        <input type="hidden" name="custom_days" id="customDaysHidden" value="{{ form.instance.custom_days }}">
+                    </div>
+                </div>
                 <div class="row g-3 mt-2">
                     <div class="col-md-4">
                         <label class="form-label">Origin (Start Point)</label>
@@ -327,6 +364,46 @@ document.addEventListener('DOMContentLoaded', function() {
             row.querySelector('input[name="trip_number[]"]').value = index + 1;
         });
         tripCount = rows.length;
+    }
+
+    // Custom days toggle
+    const serviceDaysSelect = document.querySelector('select[name="service_days"]');
+    const customDaysRow = document.getElementById('customDaysRow');
+    const customDaysHidden = document.getElementById('customDaysHidden');
+    const dayCheckboxes = document.querySelectorAll('.custom-day-check');
+
+    function toggleCustomDays() {
+        if (serviceDaysSelect && serviceDaysSelect.value === 'custom') {
+            customDaysRow.style.display = 'block';
+        } else {
+            customDaysRow.style.display = 'none';
+        }
+    }
+
+    // Initialize custom days from hidden field
+    function initCustomDays() {
+        const savedDays = customDaysHidden.value.split(',').filter(d => d);
+        dayCheckboxes.forEach(cb => {
+            cb.checked = savedDays.includes(cb.value);
+        });
+        toggleCustomDays();
+    }
+
+    // Update hidden field when checkboxes change
+    function updateCustomDaysHidden() {
+        const selectedDays = [];
+        dayCheckboxes.forEach(cb => {
+            if (cb.checked) selectedDays.push(cb.value);
+        });
+        customDaysHidden.value = selectedDays.join(',');
+    }
+
+    if (serviceDaysSelect) {
+        serviceDaysSelect.addEventListener('change', toggleCustomDays);
+        dayCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateCustomDaysHidden);
+        });
+        initCustomDays();
     }
 });
 </script>
