@@ -204,7 +204,7 @@
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'buses:live_map' %}">
+                        <a class="nav-link" href="{% url 'locations:live_map' %}">
                             <i class="fas fa-map-marked-alt me-1"></i>Live Map
                         </a>
                     </li>
@@ -280,7 +280,7 @@
                 
                 <li class="nav-item">
                     <a class="nav-link {% if 'buses' in request.resolver_match.app_name %}active{% endif %}" 
-                       href="{% url 'buses:live_map' %}">
+                       href="{% url 'locations:live_map' %}">
                         <i class="fas fa-map-marked-alt me-2"></i>Live Map
                     </a>
                 </li>
@@ -323,6 +323,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'buses:bus_list' %}">
                         <i class="fas fa-bus me-2"></i>Buses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'locations:journey_history' %}">
+                        <i class="fas fa-history me-2"></i>Journey History
                     </a>
                 </li>
                 {% if user.is_admin %}
@@ -389,7 +394,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <p class="mb-0">&copy; 2024 UBus Tracking System. All rights reserved.</p>
+            <p class="mb-0">&copy; 2026 Md. Taher Bin Omar Hijbullah and his <a href="{% url 'contributors' %}" class="text-white"><strong>Team</strong></a></p>
         </div>
     </footer>
     

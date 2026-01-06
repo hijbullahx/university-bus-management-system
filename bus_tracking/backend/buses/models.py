@@ -125,3 +125,50 @@ class ETACalculation(models.Model):
         
         eta = timezone.now() + timezone.timedelta(minutes=minutes)
         return eta, distance, minutes
+
+
+class Journey(models.Model):
+    """Track driver journeys with start/end times and status."""
+    JOURNEY_STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('aborted', 'Aborted'),
+    ]
+    
+    driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='journeys')
+    bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='journeys')
+    route = models.ForeignKey('schedules.Route', on_delete=models.CASCADE, related_name='journeys')
+    assignment = models.ForeignKey(BusAssignment, on_delete=models.SET_NULL, null=True, blank=True, related_name='journeys')
+    status = models.CharField(max_length=20, choices=JOURNEY_STATUS_CHOICES, default='active')
+    start_time = models.DateTimeField(default=timezone.now)
+    end_time = models.DateTimeField(null=True, blank=True)
+    start_latitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    start_longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    end_latitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    end_longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'journeys'
+        ordering = ['-start_time']
+
+    def __str__(self):
+        return f"{self.driver.get_full_name()} - {self.bus.bus_number} - {self.status}"
+
+    @property
+    def duration_minutes(self):
+        if self.end_time:
+            delta = self.end_time - self.start_time
+            return int(delta.total_seconds() / 60)
+        return None
+
+    @classmethod
+    def get_active_journey(cls, driver):
+        """Get the active journey for a driver."""
+        return cls.objects.filter(driver=driver, status='active').first()
+
+    @classmethod
+    def get_active_journeys(cls):
+        """Get all active journeys."""
+        return cls.objects.filter(status='active').select_related('driver', 'bus', 'route')

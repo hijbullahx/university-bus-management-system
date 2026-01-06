@@ -653,3 +653,12 @@ def show_feedback_analysis(feedback):
 
 if __name__ == "__main__":
     main()
+    
+    # Footer
+    st.markdown("---")
+    st.markdown(
+        "<div style='text-align: center; color: #6c757d; padding: 1rem;'>"
+        "© 2026 Md. Taher Bin Omar Hijbullah and Team"
+        "</div>",
+        unsafe_allow_html=True
+    )

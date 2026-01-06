@@ -11,6 +11,13 @@ class DriverLocation(models.Model):
         related_name='live_location',
         limit_choices_to={'role': 'driver'}
     )
+    journey = models.ForeignKey(
+        'buses.Journey',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='location_updates'
+    )
     latitude = models.DecimalField(max_digits=10, decimal_places=7)
     longitude = models.DecimalField(max_digits=10, decimal_places=7)
     accuracy = models.FloatField(null=True, blank=True, help_text="GPS accuracy in meters")
@@ -41,15 +48,27 @@ class DriverLocation(models.Model):
         """Check if location is stale (older than 30 seconds)."""
         threshold = timezone.now() - timedelta(seconds=30)
         return self.last_updated < threshold
+    
+    @property
+    def bus_info(self):
+        """Get the bus info from active journey."""
+        if self.journey and self.journey.status == 'active':
+            return {
+                'bus_number': self.journey.bus.bus_number,
+                'route_name': self.journey.route.name,
+                'driver_name': self.driver.get_full_name() or self.driver.username
+            }
+        return None
 
     @classmethod
     def get_active_drivers(cls):
-        """Get all drivers currently sharing location."""
+        """Get all drivers currently sharing location with active journeys."""
         threshold = timezone.now() - timedelta(seconds=60)
         return cls.objects.filter(
             is_sharing=True,
-            last_updated__gte=threshold
-        ).select_related('driver')
+            last_updated__gte=threshold,
+            journey__status='active'
+        ).select_related('driver', 'journey__bus', 'journey__route')
 
     @classmethod
     def expire_inactive(cls):
