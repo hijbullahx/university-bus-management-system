@@ -90,14 +90,28 @@ class Notification(models.Model):
     
     @classmethod
     def create_delay_notification(cls, driver, bus, route, delay_minutes, reason=''):
-        """Create a delay notification."""
+        """Create a delay notification for admins and all users."""
+        # Create notification for admin and authority
+        cls.objects.create(
+            title=f"Delay Alert: {route.name}",
+            message=f"Bus {bus.bus_number} on route {route.name} is delayed by approximately {delay_minutes} minutes. {reason}",
+            notification_type='delay',
+            priority='warning',
+            source='driver',
+            target='admin_authority',
+            target_route=route,
+            created_by=driver,
+            related_bus=bus
+        )
+        
+        # Create notification for all users
         return cls.objects.create(
             title=f"Delay Alert: {route.name}",
             message=f"Bus {bus.bus_number} on route {route.name} is delayed by approximately {delay_minutes} minutes. {reason}",
             notification_type='delay',
             priority='warning',
             source='driver',
-            target='route',
+            target='all',
             target_route=route,
             created_by=driver,
             related_bus=bus

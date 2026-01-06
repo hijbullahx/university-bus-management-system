@@ -14,7 +14,11 @@ def notification_list_api(request):
     
     notifications = Notification.objects.filter(is_active=True)
     
-    if user.role == 'driver':
+    if user.role == 'admin':
+        notifications = notifications.filter(target__in=['all', 'admin', 'admin_authority'])
+    elif user.role == 'authority':
+        notifications = notifications.filter(target__in=['all', 'authority', 'admin_authority'])
+    elif user.role == 'driver':
         notifications = notifications.filter(target__in=['all', 'drivers'])
     elif user.role in ['student', 'faculty', 'staff']:
         notifications = notifications.filter(target__in=['all', 'users'])
@@ -37,7 +41,11 @@ def unread_notifications_api(request):
     # Get notifications targeted at this user
     notifications = Notification.objects.filter(is_active=True)
     
-    if user.role == 'driver':
+    if user.role == 'admin':
+        notifications = notifications.filter(target__in=['all', 'admin', 'admin_authority'])
+    elif user.role == 'authority':
+        notifications = notifications.filter(target__in=['all', 'authority', 'admin_authority'])
+    elif user.role == 'driver':
         notifications = notifications.filter(target__in=['all', 'drivers'])
     elif user.role in ['student', 'faculty', 'staff']:
         notifications = notifications.filter(target__in=['all', 'users'])

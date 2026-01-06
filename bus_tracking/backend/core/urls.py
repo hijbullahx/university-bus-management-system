@@ -14,12 +14,12 @@ urlpatterns = [
     path('notifications/', include('notifications.urls')),
     path('reports/', include('reports.urls')),
     path('locations/', include('locations.urls')),
-    path('api/', include('buses.api_urls')),
-    path('api/', include('schedules.api_urls')),
-    path('api/', include('issues.api_urls')),
-    path('api/', include('notifications.api_urls')),
-    path('api/', include('reports.api_urls')),
-    path('api/', include('locations.api_urls')),
+    path('api/buses/', include('buses.api_urls')),
+    path('api/schedules/', include('schedules.api_urls')),
+    path('api/issues/', include('issues.api_urls')),
+    path('api/notifications/', include('notifications.api_urls')),
+    path('api/reports/', include('reports.api_urls')),
+    path('api/locations/', include('locations.api_urls')),
 ]
 
 if settings.DEBUG:
