@@ -84,7 +84,7 @@
         </ol>
     </nav>
 
-    <form method="post" id="routeForm">
+    <form method="post" id="routeForm" novalidate>
         {% csrf_token %}
         
         <!-- SECTION 1: Route Type Selection -->
@@ -717,6 +717,75 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         initLongCustomDays();
     }
+
+    // ========== FORM VALIDATION ==========
+    const routeForm = document.getElementById('routeForm');
+    
+    routeForm.addEventListener('submit', function(e) {
+        const selectedType = document.querySelector('input[name="route_type"]:checked');
+        if (!selectedType) {
+            e.preventDefault();
+            alert('Please select a route type.');
+            return false;
+        }
+        
+        const routeType = selectedType.value;
+        
+        if (routeType === 'shuttle' || routeType === 'metro') {
+            // Validate Shuttle/Metro fields
+            const routeName = document.querySelector('#shuttleConfig input[name="name"], #shuttleConfig .form-control[name="name"]');
+            const nameInput = routeForm.querySelector('[name="name"]');
+            if (nameInput && !nameInput.value.trim()) {
+                e.preventDefault();
+                alert('Please enter a Route Title.');
+                nameInput.focus();
+                return false;
+            }
+            
+            // Check at least one trip with departure time
+            const departureTimes = document.querySelectorAll('#shuttleConfig input[name="departure_time[]"]');
+            let hasValidTrip = false;
+            departureTimes.forEach(dt => {
+                if (dt.value) hasValidTrip = true;
+            });
+            if (!hasValidTrip) {
+                e.preventDefault();
+                alert('Please add at least one trip with a departure time.');
+                return false;
+            }
+        } else if (routeType === 'long') {
+            // Validate Long Road fields
+            const longRouteName = document.querySelector('input[name="long_route_name"]');
+            if (!longRouteName || !longRouteName.value.trim()) {
+                e.preventDefault();
+                alert('Please enter a Route Name for Long Road.');
+                if (longRouteName) longRouteName.focus();
+                return false;
+            }
+            
+            const finalDest = document.querySelector('input[name="final_destination"]');
+            if (!finalDest || !finalDest.value.trim()) {
+                e.preventDefault();
+                alert('Please enter a Final Destination.');
+                if (finalDest) finalDest.focus();
+                return false;
+            }
+            
+            // Check at least one pickup point
+            const pickupNames = document.querySelectorAll('#longRoadConfig input[name="pickup_name[]"]');
+            let hasValidPickup = false;
+            pickupNames.forEach(pn => {
+                if (pn.value.trim()) hasValidPickup = true;
+            });
+            if (!hasValidPickup) {
+                e.preventDefault();
+                alert('Please add at least one pickup point.');
+                return false;
+            }
+        }
+        
+        return true;
+    });
 });
 </script>
 {% endblock %}

@@ -120,6 +120,11 @@ def route_create(request):
             
             messages.success(request, 'Route created successfully.')
             return redirect('schedules:route_detail', pk=route.pk)
+        else:
+            # Form has errors - show them to the user
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = RouteForm()
     
@@ -251,6 +256,11 @@ def route_edit(request, pk):
             
             messages.success(request, 'Route updated successfully.')
             return redirect('schedules:route_detail', pk=pk)
+        else:
+            # Form has errors - show them to the user
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = RouteForm(instance=route)
     

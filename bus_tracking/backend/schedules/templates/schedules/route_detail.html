@@ -78,12 +78,6 @@
                         <a href="{% url 'schedules:route_edit' route.id %}" class="btn btn-outline-primary">
                             <i class="bi bi-pencil me-2"></i>Edit Route
                         </a>
-                        <a href="{% url 'schedules:stop_create' route.id %}" class="btn btn-outline-success">
-                            <i class="bi bi-plus-circle me-2"></i>Add Stop
-                        </a>
-                        <a href="{% url 'schedules:trip_create' route.id %}" class="btn btn-outline-info">
-                            <i class="fas fa-clock me-2"></i>Add Trip
-                        </a>
                         <a href="{% url 'schedules:route_delete' route.id %}" class="btn btn-outline-danger">
                             <i class="bi bi-trash me-2"></i>Delete Route
                         </a>
