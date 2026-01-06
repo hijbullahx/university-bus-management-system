@@ -1,11 +1,11 @@
-[tool.nixpacks]
-providers = ["python"]
-
 [phases.setup]
-nixPkgs = ["python39", "gcc"]
+nixPkgs = ["python39Full", "gcc"]
 
 [phases.install]
-cmds = ["pip install -r bus_tracking/backend/requirements.txt"]
+cmds = ["python -m pip install --upgrade pip", "pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["cd bus_tracking/backend && python manage.py collectstatic --noinput"]
 
 [start]
-cmd = "cd bus_tracking/backend && python manage.py collectstatic --noinput && python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"
+cmd = "cd bus_tracking/backend && python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"
