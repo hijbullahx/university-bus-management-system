@@ -45,10 +45,10 @@
                     <a href="{% url 'buses:bus_detail' bus.id %}" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-eye me-1"></i> View
                     </a>
-                    <a href="{% url 'buses:follow_bus' bus.id %}" class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-map-marker-alt me-1"></i> Track
-                    </a>
                     {% if user.is_admin_user %}
+                    <a href="{% url 'buses:assignment_create' %}?bus={{ bus.id }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-user-plus me-1"></i> Assign
+                    </a>
                     <a href="{% url 'buses:bus_edit' bus.id %}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
