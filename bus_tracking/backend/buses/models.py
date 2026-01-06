@@ -77,6 +77,67 @@ class BusAssignment(models.Model):
     def __str__(self):
         return f"{self.bus.bus_number} - {self.driver.username}"
 
+    def clean(self):
+        """Validate assignment rules."""
+        from django.core.exceptions import ValidationError
+        
+        # Both driver and route are required for a valid assignment
+        if self.is_active:
+            if not self.driver:
+                raise ValidationError("A driver must be assigned for an active assignment.")
+            if not self.route:
+                raise ValidationError("A route must be assigned for an active assignment.")
+        
+        if self.is_active and self.bus:
+            # Check if bus already has an active assignment
+            existing_bus = BusAssignment.objects.filter(
+                bus=self.bus, 
+                is_active=True
+            ).exclude(pk=self.pk)
+            
+            if existing_bus.exists():
+                existing_assignment = existing_bus.first()
+                raise ValidationError(
+                    f"Bus {self.bus.bus_number} already has an active assignment with driver "
+                    f"{existing_assignment.driver.get_full_name() or existing_assignment.driver.username} "
+                    f"on route {existing_assignment.route.name}. "
+                    f"Please clear the existing assignment first."
+                )
+        
+        if self.is_active and self.driver:
+            # Check if driver already has an active assignment on a different bus
+            existing = BusAssignment.objects.filter(
+                driver=self.driver, 
+                is_active=True
+            ).exclude(pk=self.pk)
+            
+            if existing.exists():
+                existing_assignment = existing.first()
+                raise ValidationError(
+                    f"Driver {self.driver.get_full_name() or self.driver.username} is already assigned to "
+                    f"Bus {existing_assignment.bus.bus_number} on route {existing_assignment.route.name}. "
+                    f"Please deactivate the existing assignment first."
+                )
+        
+        if self.is_active and self.route:
+            # Check if route already has an active assignment with a different driver
+            existing_route = BusAssignment.objects.filter(
+                route=self.route, 
+                is_active=True
+            ).exclude(pk=self.pk)
+            
+            if existing_route.exists():
+                existing_assignment = existing_route.first()
+                raise ValidationError(
+                    f"Route '{self.route.name}' already has driver "
+                    f"{existing_assignment.driver.get_full_name() or existing_assignment.driver.username} "
+                    f"assigned on Bus {existing_assignment.bus.bus_number}. "
+                    f"A route can only have one driver at a time."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class ETACalculation(models.Model):
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='etas')

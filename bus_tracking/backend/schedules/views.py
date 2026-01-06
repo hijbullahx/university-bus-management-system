@@ -337,29 +337,37 @@ def stop_delete(request, pk):
 
 @login_required
 def schedule_list(request):
-    """Display schedules organized by route type: Shuttle, Metro, Long Road"""
+    """Display schedules organized by route type: Shuttle, Metro, Long Road
+    Only shows routes that have active bus assignments."""
     from buses.models import BusAssignment
     
-    # Get active routes by type with their assigned buses
-    shuttle_routes = Route.objects.filter(
-        route_type='shuttle', is_active=True, is_published=True
-    ).prefetch_related('trips', 'stops')
-    
-    metro_routes = Route.objects.filter(
-        route_type='metro', is_active=True, is_published=True
-    ).prefetch_related('trips', 'stops')
-    
-    long_routes = Route.objects.filter(
-        route_type='long', is_active=True, is_published=True
-    ).prefetch_related('stops')
-    
-    # Get active bus assignments for each route
+    # Get active bus assignments
     assignments = BusAssignment.objects.filter(is_active=True).select_related('bus', 'driver', 'route')
+    
+    # Build assignment map and get route IDs that have assignments
     assignment_map = {}
+    assigned_route_ids = set()
     for assignment in assignments:
+        assigned_route_ids.add(assignment.route_id)
         if assignment.route_id not in assignment_map:
             assignment_map[assignment.route_id] = []
         assignment_map[assignment.route_id].append(assignment)
+    
+    # Only get routes that have active bus assignments
+    shuttle_routes = Route.objects.filter(
+        route_type='shuttle', is_active=True, is_published=True,
+        id__in=assigned_route_ids
+    ).prefetch_related('trips', 'stops')
+    
+    metro_routes = Route.objects.filter(
+        route_type='metro', is_active=True, is_published=True,
+        id__in=assigned_route_ids
+    ).prefetch_related('trips', 'stops')
+    
+    long_routes = Route.objects.filter(
+        route_type='long', is_active=True, is_published=True,
+        id__in=assigned_route_ids
+    ).prefetch_related('stops')
     
     context = {
         'shuttle_routes': shuttle_routes,

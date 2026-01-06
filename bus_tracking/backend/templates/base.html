@@ -153,6 +153,127 @@
             padding: 0.5rem 0.75rem;
         }
         
+        /* ===== RESPONSIVE DESIGN - GLOBAL STYLES ===== */
+        
+        /* Cards - Responsive sizing */
+        .card {
+            height: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        }
+        
+        .card-body {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Row with equal height cards */
+        .row > [class*='col-'] {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Dashboard stat cards */
+        .card h2 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+        }
+        
+        .card h6 {
+            font-size: clamp(0.75rem, 2vw, 1rem);
+        }
+        
+        /* Tables responsive */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Container fluid with padding */
+        .container-fluid {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Extra small devices (phones, less than 576px) */
+        @media (max-width: 575.98px) {
+            .container-fluid {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .card-footer {
+                padding: 0.5rem 1rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.875rem;
+            }
+            
+            .btn-lg {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+            
+            /* Hide text on small buttons */
+            .btn-sm .btn-text {
+                display: none;
+            }
+            
+            /* Stack cards vertically */
+            .row > [class*='col-lg-'], 
+            .row > [class*='col-md-'] {
+                margin-bottom: 1rem;
+            }
+            
+            /* Smaller icons */
+            .fa-3x { font-size: 2rem !important; }
+            .fa-2x { font-size: 1.5rem !important; }
+            
+            /* Map height */
+            .map-container, #liveMap {
+                height: 300px !important;
+                min-height: 300px !important;
+            }
+        }
+        
+        /* Small devices (landscape phones, 576px to 767px) */
+        @media (min-width: 576px) and (max-width: 767.98px) {
+            .container-fluid {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            
+            .map-container, #liveMap {
+                height: 350px !important;
+            }
+        }
+        
+        /* Medium devices (tablets, 768px to 991px) */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .sidebar .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Sidebar mobile behavior */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -179,6 +300,39 @@
             
             .sidebar-overlay.show {
                 display: block;
+            }
+            
+            /* Full width main content on mobile */
+            .main-content {
+                width: 100% !important;
+            }
+        }
+        
+        /* Large devices (desktops, 992px and up) */
+        @media (min-width: 992px) {
+            .container-fluid {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        
+        /* Extra large devices (large desktops, 1200px and up) */
+        @media (min-width: 1200px) {
+            .container-fluid {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .sidebar, .navbar, .footer, .btn {
+                display: none !important;
+            }
+            
+            .main-content {
+                width: 100% !important;
+                margin: 0 !important;
             }
         }
     </style>
@@ -352,6 +506,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'notifications:list' %}">
                         <i class="fas fa-bell me-2"></i>Notifications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notifications:create' %}">
+                        <i class="fas fa-paper-plane me-2"></i>Send Notification
                     </a>
                 </li>
                 <li class="nav-item">

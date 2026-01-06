@@ -81,10 +81,21 @@ def route_with_eta_api(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def schedule_list_api(request):
+    """Get schedules - only for routes with active bus assignments."""
+    from buses.models import BusAssignment
+    
     day = request.GET.get('day')
     route_id = request.GET.get('route')
     
-    schedules = Schedule.objects.select_related('route').filter(is_active=True)
+    # Get route IDs that have active bus assignments
+    assigned_route_ids = BusAssignment.objects.filter(
+        is_active=True
+    ).values_list('route_id', flat=True)
+    
+    schedules = Schedule.objects.select_related('route').filter(
+        is_active=True,
+        route_id__in=assigned_route_ids
+    )
     
     if day:
         schedules = schedules.filter(day_of_week=day)
@@ -98,12 +109,21 @@ def schedule_list_api(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def today_schedules_api(request):
+    """Get today's schedules - only for routes with active bus assignments."""
+    from buses.models import BusAssignment
+    
     days_map = {0: 'mon', 1: 'tue', 2: 'wed', 3: 'thu', 4: 'fri', 5: 'sat', 6: 'sun'}
     today = days_map[timezone.now().weekday()]
     
+    # Get route IDs that have active bus assignments
+    assigned_route_ids = BusAssignment.objects.filter(
+        is_active=True
+    ).values_list('route_id', flat=True)
+    
     schedules = Schedule.objects.select_related('route').filter(
         is_active=True,
-        day_of_week=today
+        day_of_week=today,
+        route_id__in=assigned_route_ids
     ).order_by('departure_time')
     
     serializer = ScheduleSerializer(schedules, many=True)

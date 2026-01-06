@@ -11,6 +11,7 @@ urlpatterns = [
     path('<int:pk>/edit/', views.bus_edit, name='bus_edit'),
     path('<int:pk>/delete/', views.bus_delete, name='bus_delete'),
     path('<int:pk>/follow/', views.follow_bus, name='follow_bus'),
+    path('<int:bus_id>/clear-assignment/', views.assignment_clear, name='assignment_clear'),
     path('assignments/', views.assignment_list, name='assignment_list'),
     path('assignments/create/', views.assignment_create, name='assignment_create'),
 ]

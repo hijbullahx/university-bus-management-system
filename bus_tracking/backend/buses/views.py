@@ -20,7 +20,18 @@ def bus_list(request):
     page = request.GET.get('page')
     buses = paginator.get_page(page)
     
-    return render(request, 'buses/bus_list.html', {'buses': buses})
+    # Get active assignments for all buses
+    active_assignments = BusAssignment.objects.filter(
+        is_active=True
+    ).select_related('driver', 'route')
+    
+    # Create a mapping of bus_id to assignment
+    assignment_map = {a.bus_id: a for a in active_assignments}
+    
+    return render(request, 'buses/bus_list.html', {
+        'buses': buses,
+        'assignment_map': assignment_map
+    })
 
 
 @login_required
@@ -185,4 +196,42 @@ def assignment_create(request):
         'form': form, 
         'title': 'Create Assignment',
         'selected_bus': bus
+    })
+
+
+@login_required
+@admin_required
+def assignment_clear(request, bus_id):
+    """Clear/deactivate the active assignment for a bus."""
+    bus = get_object_or_404(Bus, pk=bus_id)
+    
+    # Get active assignment for this bus
+    assignment = BusAssignment.objects.filter(bus=bus, is_active=True).first()
+    
+    if not assignment:
+        messages.warning(request, f'Bus {bus.bus_number} has no active assignment to clear.')
+        return redirect('buses:bus_list')
+    
+    if request.method == 'POST':
+        # Deactivate the assignment
+        driver_name = assignment.driver.get_full_name() or assignment.driver.username
+        route_name = assignment.route.name
+        
+        assignment.is_active = False
+        assignment.save()
+        
+        # Clear bus current route
+        bus.current_route = None
+        bus.save()
+        
+        # Deactivate related schedules
+        from schedules.models import Schedule
+        Schedule.objects.filter(bus=bus, driver=assignment.driver, is_active=True).update(is_active=False)
+        
+        messages.success(request, f'Assignment cleared: Bus {bus.bus_number} was unassigned from route "{route_name}" and driver {driver_name}.')
+        return redirect('buses:bus_list')
+    
+    return render(request, 'buses/assignment_clear_confirm.html', {
+        'bus': bus,
+        'assignment': assignment
     })

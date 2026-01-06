@@ -19,35 +19,35 @@
     <!-- PROMINENT ASSIGNMENT INFO -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-lg bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white p-4">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;">
+                <div class="card-body p-4" style="color: #ffffff !important;">
                     <div class="row align-items-center">
-                        <div class="col-md-3 text-center border-end border-light-subtle">
+                        <div class="col-md-3 text-center border-end" style="border-color: rgba(255,255,255,0.3) !important;">
                             <div class="mb-2">
-                                <i class="fas fa-bus fa-3x"></i>
+                                <i class="fas fa-bus fa-3x" style="color: #ffffff;"></i>
                             </div>
-                            <h2 class="mb-0 fw-bold">{{ assignment.bus.bus_number }}</h2>
-                            <small class="opacity-75">Assigned Bus</small>
+                            <h2 class="mb-0 fw-bold" style="color: #ffffff;">{{ assignment.bus.bus_number }}</h2>
+                            <small style="color: rgba(255,255,255,0.8);">Assigned Bus</small>
                         </div>
-                        <div class="col-md-4 text-center border-end border-light-subtle">
+                        <div class="col-md-4 text-center border-end" style="border-color: rgba(255,255,255,0.3) !important;">
                             <div class="mb-2">
-                                <i class="fas fa-route fa-2x"></i>
+                                <i class="fas fa-route fa-2x" style="color: #ffffff;"></i>
                             </div>
-                            <h4 class="mb-0 fw-bold">{{ assignment.route.name }}</h4>
-                            <small class="opacity-75">{{ assignment.route.get_route_type_display }}</small>
+                            <h4 class="mb-0 fw-bold" style="color: #ffffff;">{{ assignment.route.name }}</h4>
+                            <small style="color: rgba(255,255,255,0.8);">{{ assignment.route.get_route_type_display }}</small>
                         </div>
-                        <div class="col-md-3 text-center border-end border-light-subtle">
+                        <div class="col-md-3 text-center border-end" style="border-color: rgba(255,255,255,0.3) !important;">
                             <div class="mb-2">
-                                <i class="fas fa-clock fa-2x"></i>
+                                <i class="fas fa-clock fa-2x" style="color: #ffffff;"></i>
                             </div>
-                            <h5 class="mb-0">
+                            <h5 class="mb-0" style="color: #ffffff;">
                                 {% if assignment.shift_start and assignment.shift_end %}
                                 {{ assignment.shift_start|time:"h:i A" }} - {{ assignment.shift_end|time:"h:i A" }}
                                 {% else %}
                                 All Day
                                 {% endif %}
                             </h5>
-                            <small class="opacity-75">Service Time</small>
+                            <small style="color: rgba(255,255,255,0.8);">Service Time</small>
                         </div>
                         <div class="col-md-2 text-center">
                             <span id="journeyStatusBadge" class="badge bg-secondary fs-6 px-3 py-2">
@@ -380,11 +380,11 @@ async function startJourney() {
                     showActiveJourneyUI(new Date().toISOString());
                     showToast('Journey started successfully!', 'success');
                 } else {
-                    alert(data.error || 'Failed to start journey');
+                    showToast(data.error || 'Failed to start journey', 'danger');
                 }
             } catch (error) {
                 console.error('Error starting journey:', error);
-                alert('Error starting journey. Please try again.');
+                showToast('Network error. Please check your connection.', 'danger');
             }
         },
         (error) => {

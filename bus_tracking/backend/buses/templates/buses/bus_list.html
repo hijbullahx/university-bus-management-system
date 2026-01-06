@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load schedule_tags %}
 {% block title %}Buses - Bus Tracking{% endblock %}
 {% block content %}
 <div class="container-fluid py-4">
@@ -37,6 +38,14 @@
                     <p class="mb-1"><i class="fas fa-id-card me-2"></i>{{ bus.license_plate }}</p>
                     <p class="mb-1"><i class="fas fa-users me-2"></i>{{ bus.capacity }} seats</p>
                     <p class="mb-1"><i class="fas fa-route me-2"></i>{{ bus.current_route.name|default:"No Route" }}</p>
+                    {% with assignment=assignment_map|get_item:bus.id %}
+                    {% if assignment %}
+                    <p class="mb-1">
+                        <i class="fas fa-user me-2 text-success"></i>
+                        <span class="text-success">{{ assignment.driver.get_full_name|default:assignment.driver.username }}</span>
+                    </p>
+                    {% endif %}
+                    {% endwith %}
                     {% if bus.model %}
                     <p class="mb-0 text-muted small">{{ bus.model }} {% if bus.year %}({{ bus.year }}){% endif %}</p>
                     {% endif %}
@@ -46,9 +55,17 @@
                         <i class="fas fa-eye me-1"></i> View
                     </a>
                     {% if user.is_admin_user %}
+                    {% with assignment=assignment_map|get_item:bus.id %}
+                    {% if assignment %}
+                    <a href="{% url 'buses:assignment_clear' bus.id %}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-unlink me-1"></i> Clear
+                    </a>
+                    {% else %}
                     <a href="{% url 'buses:assignment_create' %}?bus={{ bus.id }}" class="btn btn-outline-info btn-sm">
                         <i class="fas fa-user-plus me-1"></i> Assign
                     </a>
+                    {% endif %}
+                    {% endwith %}
                     <a href="{% url 'buses:bus_edit' bus.id %}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
