@@ -69,7 +69,7 @@
                                     <form method="post" action="{% url 'schedules:trip_stop_delete' st.id %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this stop time?')">
-                                            <i class="fas fa-times"></i>
+                                            <i class="fas fa-times me-1"></i> Remove
                                         </button>
                                     </form>
                                 </td>
