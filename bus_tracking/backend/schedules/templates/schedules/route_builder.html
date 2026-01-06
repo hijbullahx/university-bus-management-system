@@ -323,6 +323,43 @@
                                value="{{ form.instance.description }}">
                     </div>
                 </div>
+                <!-- Custom Days Selection for Long Road -->
+                <div class="row g-3 mt-2" id="longCustomDaysRow" style="display: none;">
+                    <div class="col-12">
+                        <label class="form-label">Select Days</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="sat" id="long_day_sat">
+                                <label class="form-check-label" for="long_day_sat">Saturday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="sun" id="long_day_sun">
+                                <label class="form-check-label" for="long_day_sun">Sunday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="mon" id="long_day_mon">
+                                <label class="form-check-label" for="long_day_mon">Monday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="tue" id="long_day_tue">
+                                <label class="form-check-label" for="long_day_tue">Tuesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="wed" id="long_day_wed">
+                                <label class="form-check-label" for="long_day_wed">Wednesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="thu" id="long_day_thu">
+                                <label class="form-check-label" for="long_day_thu">Thursday</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input long-custom-day-check" name="long_custom_day" value="fri" id="long_day_fri">
+                                <label class="form-check-label" for="long_day_fri">Friday</label>
+                            </div>
+                        </div>
+                        <input type="hidden" name="long_custom_days" id="longCustomDaysHidden" value="{{ form.instance.custom_days }}">
+                    </div>
+                </div>
             </div>
 
             <!-- Pickup Points Section -->
@@ -601,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
         attachPickupHandlers(newRow);
     });
 
-    // Custom days toggle
+    // Custom days toggle (Shuttle/Metro)
     const serviceDaysSelect = document.querySelector('select[name="service_days"]');
     const customDaysRow = document.getElementById('customDaysRow');
     const customDaysHidden = document.getElementById('customDaysHidden');
@@ -639,6 +676,46 @@ document.addEventListener('DOMContentLoaded', function() {
             cb.addEventListener('change', updateCustomDaysHidden);
         });
         initCustomDays();
+    }
+
+    // Custom days toggle (Long Road)
+    const longServiceDaysSelect = document.querySelector('select[name="long_service_days"]');
+    const longCustomDaysRow = document.getElementById('longCustomDaysRow');
+    const longCustomDaysHidden = document.getElementById('longCustomDaysHidden');
+    const longDayCheckboxes = document.querySelectorAll('.long-custom-day-check');
+
+    function toggleLongCustomDays() {
+        if (longServiceDaysSelect && longServiceDaysSelect.value === 'custom') {
+            longCustomDaysRow.style.display = 'block';
+        } else {
+            longCustomDaysRow.style.display = 'none';
+        }
+    }
+
+    function initLongCustomDays() {
+        if (longCustomDaysHidden) {
+            const savedDays = longCustomDaysHidden.value.split(',').filter(d => d);
+            longDayCheckboxes.forEach(cb => {
+                cb.checked = savedDays.includes(cb.value);
+            });
+        }
+        toggleLongCustomDays();
+    }
+
+    function updateLongCustomDaysHidden() {
+        const selectedDays = [];
+        longDayCheckboxes.forEach(cb => {
+            if (cb.checked) selectedDays.push(cb.value);
+        });
+        if (longCustomDaysHidden) longCustomDaysHidden.value = selectedDays.join(',');
+    }
+
+    if (longServiceDaysSelect) {
+        longServiceDaysSelect.addEventListener('change', toggleLongCustomDays);
+        longDayCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateLongCustomDaysHidden);
+        });
+        initLongCustomDays();
     }
 });
 </script>

@@ -53,12 +53,18 @@ def route_create(request):
         
         # Handle Long Road route separately
         if route_type == 'long':
+            service_days = request.POST.get('long_service_days', 'sat-thu')
+            custom_days = ''
+            if service_days == 'custom':
+                custom_days = request.POST.get('long_custom_days', '')
+            
             route = Route.objects.create(
                 name=request.POST.get('long_route_name', ''),
                 description=request.POST.get('long_description', ''),
                 route_type='long',
                 color=request.POST.get('long_color', '#dc3545'),
-                service_days=request.POST.get('long_service_days', 'sat-thu'),
+                service_days=service_days,
+                custom_days=custom_days,
                 destination_name=request.POST.get('final_destination', ''),
                 is_active=True,
                 is_published=True
@@ -138,6 +144,11 @@ def route_edit(request, pk):
             route.color = request.POST.get('long_color', '#dc3545')
             route.service_days = request.POST.get('long_service_days', 'sat-thu')
             route.destination_name = request.POST.get('final_destination', '')
+            # Handle custom days for Long Road
+            if route.service_days == 'custom':
+                route.custom_days = request.POST.get('long_custom_days', '')
+            else:
+                route.custom_days = ''
             route.is_active = True
             route.is_published = True
             route.save()
