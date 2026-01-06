@@ -337,23 +337,38 @@ def stop_delete(request, pk):
 
 @login_required
 def schedule_list(request):
-    schedules = Schedule.objects.select_related('route').all()
+    """Display schedules organized by route type: Shuttle, Metro, Long Road"""
+    from buses.models import BusAssignment
     
-    route_id = request.GET.get('route')
-    if route_id:
-        schedules = schedules.filter(route_id=route_id)
+    # Get active routes by type with their assigned buses
+    shuttle_routes = Route.objects.filter(
+        route_type='shuttle', is_active=True, is_published=True
+    ).prefetch_related('trips', 'stops')
     
-    day = request.GET.get('day')
-    if day:
-        schedules = schedules.filter(day_of_week=day)
+    metro_routes = Route.objects.filter(
+        route_type='metro', is_active=True, is_published=True
+    ).prefetch_related('trips', 'stops')
     
-    paginator = Paginator(schedules, 20)
-    page = request.GET.get('page')
-    schedules = paginator.get_page(page)
+    long_routes = Route.objects.filter(
+        route_type='long', is_active=True, is_published=True
+    ).prefetch_related('stops')
     
-    routes = Route.objects.filter(is_active=True)
+    # Get active bus assignments for each route
+    assignments = BusAssignment.objects.filter(is_active=True).select_related('bus', 'driver', 'route')
+    assignment_map = {}
+    for assignment in assignments:
+        if assignment.route_id not in assignment_map:
+            assignment_map[assignment.route_id] = []
+        assignment_map[assignment.route_id].append(assignment)
     
-    return render(request, 'schedules/schedule_list.html', {'schedules': schedules, 'routes': routes})
+    context = {
+        'shuttle_routes': shuttle_routes,
+        'metro_routes': metro_routes,
+        'long_routes': long_routes,
+        'assignment_map': assignment_map,
+    }
+    
+    return render(request, 'schedules/schedule_list.html', context)
 
 
 @login_required

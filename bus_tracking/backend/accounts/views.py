@@ -109,7 +109,74 @@ def user_list(request):
         return redirect('accounts:dashboard')
     
     users = User.objects.all().order_by('-created_at')
-    return render(request, 'accounts/user_list.html', {'users': users})
+    
+    # Filter by role
+    role_filter = request.GET.get('role', '')
+    if role_filter:
+        users = users.filter(role=role_filter)
+    
+    # Filter by status
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'active':
+        users = users.filter(is_active=True)
+    elif status_filter == 'inactive':
+        users = users.filter(is_active=False)
+    
+    context = {
+        'users': users,
+        'current_role': role_filter,
+        'current_status': status_filter,
+    }
+    return render(request, 'accounts/user_list.html', context)
+
+
+@login_required
+def user_create(request):
+    """Create a new user - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        role = request.POST.get('role', 'student')
+        
+        # Validate required fields
+        if not full_name or not username or not password:
+            messages.error(request, 'Full name, username, and password are required.')
+            return render(request, 'accounts/user_create_form.html', {'title': 'Add User'})
+        
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, f'Username "{username}" is already taken.')
+            return render(request, 'accounts/user_create_form.html', {'title': 'Add User'})
+        
+        # Split full name
+        name_parts = full_name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            role=role,
+            phone=phone,
+            is_active=True,
+            approval_status='approved'
+        )
+        
+        messages.success(request, f'User "{full_name}" created successfully.')
+        return redirect('accounts:user_list')
+    
+    return render(request, 'accounts/user_create_form.html', {'title': 'Add User'})
 
 
 @login_required
@@ -319,4 +386,77 @@ def driver_delete(request, pk):
         return redirect('accounts:driver_list')
     
     return render(request, 'accounts/driver_confirm_delete.html', {'driver': driver})
+
+
+@login_required
+def user_edit(request, pk):
+    """Edit a user - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    user_obj = get_object_or_404(User, pk=pk)
+    
+    # Prevent editing admin users
+    if user_obj.is_admin_user:
+        messages.error(request, 'Cannot edit admin users.')
+        return redirect('accounts:user_list')
+    
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        role = request.POST.get('role', user_obj.role)
+        is_active = request.POST.get('is_active') == 'on'
+        new_password = request.POST.get('password', '').strip()
+        
+        # Split full name
+        name_parts = full_name.split(' ', 1)
+        user_obj.first_name = name_parts[0]
+        user_obj.last_name = name_parts[1] if len(name_parts) > 1 else ''
+        user_obj.email = email
+        user_obj.phone = phone
+        user_obj.role = role
+        user_obj.is_active = is_active
+        
+        # Update password if provided
+        if new_password:
+            user_obj.set_password(new_password)
+        
+        user_obj.save()
+        messages.success(request, f'User "{user_obj.username}" updated successfully.')
+        return redirect('accounts:user_list')
+    
+    return render(request, 'accounts/user_form.html', {
+        'title': 'Edit User',
+        'user_obj': user_obj
+    })
+
+
+@login_required
+def user_delete(request, pk):
+    """Delete a user - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    user_obj = get_object_or_404(User, pk=pk)
+    
+    # Prevent deleting admin users
+    if user_obj.is_admin_user:
+        messages.error(request, 'Cannot delete admin users.')
+        return redirect('accounts:user_list')
+    
+    # Prevent self-deletion
+    if user_obj.pk == request.user.pk:
+        messages.error(request, 'Cannot delete your own account.')
+        return redirect('accounts:user_list')
+    
+    if request.method == 'POST':
+        name = user_obj.get_full_name() or user_obj.username
+        user_obj.delete()
+        messages.success(request, f'User "{name}" deleted successfully.')
+        return redirect('accounts:user_list')
+    
+    return render(request, 'accounts/user_confirm_delete.html', {'user_obj': user_obj})
 
