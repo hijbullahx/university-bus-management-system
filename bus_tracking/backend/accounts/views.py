@@ -44,12 +44,8 @@ def dashboard(request):
     context = {'user': user}
 
     if user.is_regular_user:
-        context['buses'] = Bus.objects.filter(is_active=True)[:5]
-        context['routes'] = Route.objects.filter(is_active=True)[:5]
-        context['notifications'] = Notification.objects.filter(
-            is_active=True
-        ).order_by('-created_at')[:5]
-        return render(request, 'accounts/dashboard_user.html', context)
+        # Regular users go directly to schedules page as their home
+        return redirect('schedules:schedule_list')
 
     elif user.is_driver:
         try:

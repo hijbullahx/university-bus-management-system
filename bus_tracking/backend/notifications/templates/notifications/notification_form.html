@@ -160,12 +160,10 @@ input[name="target"]:checked ~ .form-check-label {
 document.addEventListener('DOMContentLoaded', function() {
     const targetRadios = document.querySelectorAll('input[name="target"]');
     const routeField = document.getElementById('routeField');
-    const hiddenTarget = document.getElementById('hiddenTarget');
     
     function toggleRouteField() {
         const selectedTarget = document.querySelector('input[name="target"]:checked');
         if (selectedTarget) {
-            hiddenTarget.value = selectedTarget.value;
             routeField.style.display = selectedTarget.value === 'route' ? 'block' : 'none';
         }
     }

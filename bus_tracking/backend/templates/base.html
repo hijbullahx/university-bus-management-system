@@ -425,28 +425,30 @@
         <!-- Sidebar -->
         <nav class="sidebar p-3 d-none d-lg-block" id="sidebar" style="width: 250px;">
             <ul class="nav flex-column">
+                {% if user.is_admin_user or user.is_authority or user.is_driver %}
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                        href="{% url 'accounts:dashboard' %}">
                         <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                     </a>
                 </li>
+                {% endif %}
                 
                 <li class="nav-item">
-                    <a class="nav-link {% if 'buses' in request.resolver_match.app_name %}active{% endif %}" 
+                    <a class="nav-link {% if 'locations' in request.resolver_match.app_name and request.resolver_match.url_name == 'live_map' %}active{% endif %}" 
                        href="{% url 'locations:live_map' %}">
                         <i class="fas fa-map-marked-alt me-2"></i>Live Map
                     </a>
                 </li>
                 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'schedules:route_list' %}">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'route_list' %}active{% endif %}" href="{% url 'schedules:route_list' %}">
                         <i class="fas fa-route me-2"></i>Routes
                     </a>
                 </li>
                 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'schedules:schedule_list' %}">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'schedule_list' %}active{% endif %}" href="{% url 'schedules:schedule_list' %}">
                         <i class="fas fa-calendar-alt me-2"></i>Schedules
                     </a>
                 </li>
@@ -469,7 +471,7 @@
                 </li>
                 {% endif %}
                 
-                {% if user.is_admin or user.is_authority %}
+                {% if user.is_admin_user or user.is_authority %}
                 <hr>
                 <li class="nav-item">
                     <span class="text-muted small px-3">MANAGEMENT</span>
@@ -484,7 +486,7 @@
                         <i class="fas fa-history me-2"></i>Journey History
                     </a>
                 </li>
-                {% if user.is_admin %}
+                {% if user.is_admin_user %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'accounts:user_list' %}">
                         <i class="fas fa-users me-2"></i>Users
