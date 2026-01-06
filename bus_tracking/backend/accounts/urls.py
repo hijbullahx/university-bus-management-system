@@ -14,6 +14,11 @@ urlpatterns = [
     path('pending/', views.pending_registrations, name='pending_registrations'),
     path('approve/<int:pk>/', views.approve_user, name='approve_user'),
     path('reject/<int:pk>/', views.reject_user, name='reject_user'),
+    # Driver management
+    path('drivers/', views.driver_list, name='driver_list'),
+    path('drivers/add/', views.driver_create, name='driver_create'),
+    path('drivers/<int:pk>/edit/', views.driver_edit, name='driver_edit'),
+    path('drivers/<int:pk>/delete/', views.driver_delete, name='driver_delete'),
     # User pages
     path('home/', views.user_home, name='user_home'),
     path('live-map/', views.user_live_map, name='user_live_map'),

@@ -74,7 +74,7 @@ def dashboard(request):
         context['total_drivers'] = User.objects.filter(role='driver').count()
         context['pending_issues'] = Issue.objects.filter(status='pending').count()
         context['pending_registrations'] = User.objects.filter(approval_status='pending').count()
-        context['recent_issues'] = Issue.objects.order_by('-created_at')[:5]
+        context['total_users'] = User.objects.exclude(role__in=['admin', 'driver']).count()
         return render(request, 'accounts/dashboard_admin.html', context)
 
     elif user.is_authority:
@@ -189,4 +189,134 @@ def user_live_map(request):
         'buses': Bus.objects.filter(is_active=True).select_related('current_route'),
     }
     return render(request, 'accounts/user_live_map.html', context)
+
+
+@login_required
+def driver_list(request):
+    """List all drivers - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    drivers = User.objects.filter(role='driver').order_by('-created_at')
+    return render(request, 'accounts/driver_list.html', {'drivers': drivers})
+
+
+@login_required
+def driver_create(request):
+    """Create a new driver - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        address = request.POST.get('address', '').strip()
+        nid_number = request.POST.get('nid_number', '').strip()
+        
+        # Validate required fields
+        if not full_name or not username or not password:
+            messages.error(request, 'Full name, username, and password are required.')
+            return render(request, 'accounts/driver_form.html', {'title': 'Add Driver'})
+        
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, f'Username "{username}" is already taken.')
+            return render(request, 'accounts/driver_form.html', {'title': 'Add Driver'})
+        
+        # Split full name
+        name_parts = full_name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        # Handle photo upload
+        photo = request.FILES.get('photo')
+        
+        # Create driver
+        driver = User.objects.create_user(
+            username=username,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            role='driver',
+            phone=phone,
+            address=address,
+            nid_number=nid_number,
+            is_active=True,
+            approval_status='approved',
+            is_active_driver=True
+        )
+        
+        if photo:
+            driver.profile_picture = photo
+            driver.save()
+        
+        messages.success(request, f'Driver "{full_name}" created successfully. Username: {username}')
+        return redirect('accounts:driver_list')
+    
+    return render(request, 'accounts/driver_form.html', {'title': 'Add Driver'})
+
+
+@login_required
+def driver_edit(request, pk):
+    """Edit a driver - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    driver = get_object_or_404(User, pk=pk, role='driver')
+    
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        address = request.POST.get('address', '').strip()
+        nid_number = request.POST.get('nid_number', '').strip()
+        new_password = request.POST.get('password', '').strip()
+        
+        # Split full name
+        name_parts = full_name.split(' ', 1)
+        driver.first_name = name_parts[0]
+        driver.last_name = name_parts[1] if len(name_parts) > 1 else ''
+        driver.phone = phone
+        driver.address = address
+        driver.nid_number = nid_number
+        
+        # Update password if provided
+        if new_password:
+            driver.set_password(new_password)
+        
+        # Handle photo upload
+        photo = request.FILES.get('photo')
+        if photo:
+            driver.profile_picture = photo
+        
+        driver.save()
+        messages.success(request, f'Driver "{full_name}" updated successfully.')
+        return redirect('accounts:driver_list')
+    
+    return render(request, 'accounts/driver_form.html', {
+        'title': 'Edit Driver',
+        'driver': driver
+    })
+
+
+@login_required
+def driver_delete(request, pk):
+    """Delete a driver - Admin only"""
+    if not request.user.is_admin_user:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    driver = get_object_or_404(User, pk=pk, role='driver')
+    
+    if request.method == 'POST':
+        name = driver.get_full_name() or driver.username
+        driver.delete()
+        messages.success(request, f'Driver "{name}" deleted successfully.')
+        return redirect('accounts:driver_list')
+    
+    return render(request, 'accounts/driver_confirm_delete.html', {'driver': driver})
 

@@ -41,6 +41,24 @@
                                 </span>
                             </td>
                         </tr>
+                        {% if route.current_buses.exists %}
+                        <tr>
+                            <th>Assigned Bus:</th>
+                            <td>
+                                {% for bus in route.current_buses.all %}
+                                <span class="badge bg-primary">{{ bus.bus_number }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% for assignment in route.assignments.all %}
+                        {% if assignment.is_active %}
+                        <tr>
+                            <th>Driver:</th>
+                            <td>{{ assignment.driver.get_full_name|default:assignment.driver.username }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
                         <tr>
                             <th>Total Stops:</th>
                             <td>{{ stops.count }}</td>

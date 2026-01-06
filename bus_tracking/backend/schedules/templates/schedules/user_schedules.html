@@ -163,14 +163,45 @@
                             </span>
                         </h5>
                         <p class="card-text text-muted mb-0 small">{{ route.description|truncatechars:60 }}</p>
+                        {% if route.current_buses.exists %}
+                        <p class="mb-0 mt-1">
+                            <i class="fas fa-bus text-primary me-1"></i>
+                            {% for bus in route.current_buses.all %}
+                            <span class="badge bg-primary">{{ bus.bus_number }}</span>
+                            {% endfor %}
+                            {% for assignment in route.assignments.all %}
+                            {% if assignment.is_active %}
+                            <small class="text-muted ms-2"><i class="fas fa-user me-1"></i>{{ assignment.driver.get_full_name|default:assignment.driver.username }}</small>
+                            {% endif %}
+                            {% endfor %}
+                        </p>
+                        {% endif %}
                     </div>
                     <div class="text-end">
                         <span class="badge bg-secondary">{{ route.stops.count }} stops</span>
+                        {% if route.trips.exists %}
+                        <br><small class="text-muted">{{ route.trips.count }} trips</small>
+                        {% endif %}
                         <i class="fas fa-chevron-down ms-2 toggle-icon"></i>
                     </div>
                 </div>
             </div>
             <div class="stops-list" id="stops-{{ route.id }}">
+                {% if route.current_buses.exists %}
+                <div class="p-2 bg-primary bg-opacity-10 border-bottom">
+                    <small>
+                        <strong><i class="fas fa-bus me-2"></i>Assigned Bus:</strong>
+                        {% for bus in route.current_buses.all %}
+                        {{ bus.bus_number }} ({{ bus.license_plate }})
+                        {% endfor %}
+                        {% for assignment in route.assignments.all %}
+                        {% if assignment.is_active %}
+                        | <strong>Driver:</strong> {{ assignment.driver.get_full_name|default:assignment.driver.username }}
+                        {% endif %}
+                        {% endfor %}
+                    </small>
+                </div>
+                {% endif %}
                 {% if route.route_type == 'long' %}
                 <!-- Long Road Route - Pickup Points Display -->
                 <div class="p-3 bg-warning bg-opacity-10 border-bottom">

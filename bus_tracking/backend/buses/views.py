@@ -121,7 +121,57 @@ def assignment_create(request):
             bus_obj.save()
             # Deactivate other assignments for this bus
             BusAssignment.objects.filter(bus=bus_obj, is_active=True).exclude(pk=assignment.pk).update(is_active=False)
-            messages.success(request, f'Bus {bus_obj.bus_number} assigned to route "{assignment.route.name}" with driver {assignment.driver.get_full_name() or assignment.driver.username}.')
+            
+            # Auto-create schedules based on route's service days and trips
+            route = assignment.route
+            from schedules.models import Schedule
+            
+            # Determine which days to create schedules for
+            day_mapping = {
+                'sat-thu': ['sat', 'sun', 'mon', 'tue', 'wed', 'thu'],
+                'sun-thu': ['sun', 'mon', 'tue', 'wed', 'thu'],
+                'mon-fri': ['mon', 'tue', 'wed', 'thu', 'fri'],
+                'all': ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'],
+            }
+            
+            if route.service_days == 'custom' and route.custom_days:
+                days = route.custom_days.split(',')
+            else:
+                days = day_mapping.get(route.service_days, ['sat', 'sun', 'mon', 'tue', 'wed', 'thu'])
+            
+            # Delete old schedules for this route/bus combination
+            Schedule.objects.filter(route=route, bus=bus_obj).delete()
+            
+            # Create schedules from route trips or pickup points
+            if route.trips.exists():
+                for trip in route.trips.all():
+                    for day in days:
+                        Schedule.objects.create(
+                            route=route,
+                            bus=bus_obj,
+                            driver=assignment.driver,
+                            day_of_week=day,
+                            departure_time=trip.departure_time,
+                            arrival_time=trip.arrival_time or trip.departure_time,
+                            is_active=True
+                        )
+            elif route.stops.exists():
+                # For Long Road routes, use first and last pickup times
+                first_stop = route.stops.order_by('order').first()
+                last_stop = route.stops.order_by('order').last()
+                if first_stop and first_stop.scheduled_time:
+                    for day in days:
+                        Schedule.objects.create(
+                            route=route,
+                            bus=bus_obj,
+                            driver=assignment.driver,
+                            day_of_week=day,
+                            departure_time=first_stop.scheduled_time,
+                            arrival_time=last_stop.scheduled_time if last_stop and last_stop.scheduled_time else first_stop.scheduled_time,
+                            is_active=True
+                        )
+            
+            messages.success(request, f'Bus {bus_obj.bus_number} assigned to route "{assignment.route.name}" with driver {assignment.driver.get_full_name() or assignment.driver.username}. Schedules updated.')
             if bus:
                 return redirect('buses:bus_list')
             return redirect('buses:assignment_list')

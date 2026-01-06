@@ -75,6 +75,8 @@ class Schedule(models.Model):
     ]
 
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='schedules')
+    bus = models.ForeignKey('buses.Bus', on_delete=models.SET_NULL, null=True, blank=True, related_name='schedules')
+    driver = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='driver_schedules')
     day_of_week = models.CharField(max_length=3, choices=DAYS_CHOICES)
     departure_time = models.TimeField()
     arrival_time = models.TimeField()

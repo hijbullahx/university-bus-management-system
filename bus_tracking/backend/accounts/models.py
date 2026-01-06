@@ -19,6 +19,8 @@ class User(AbstractUser):
     
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
     phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True, help_text='Full address')
+    nid_number = models.CharField(max_length=50, blank=True, help_text='National ID Number')
     employee_id = models.CharField(max_length=50, blank=True)
     university_id = models.CharField(max_length=50, blank=True, help_text='University ID for verification')
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
