@@ -141,8 +141,9 @@
         </div>
         <div class="mt-2 d-flex gap-2">
             <button class="btn btn-sm btn-outline-primary filter-btn active" data-filter="all">All</button>
-            <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="long">Long Routes</button>
+            <button class="btn btn-sm btn-outline-warning filter-btn" data-filter="long">Long Road</button>
             <button class="btn btn-sm btn-outline-success filter-btn" data-filter="shuttle">Shuttle</button>
+            <button class="btn btn-sm btn-outline-info filter-btn" data-filter="metro">Metro</button>
         </div>
     </div>
 
@@ -157,7 +158,7 @@
                     <div>
                         <h5 class="card-title mb-1">
                             {{ route.name }}
-                            <span class="badge route-type-badge {% if route.route_type == 'shuttle' %}bg-success{% else %}bg-primary{% endif %}">
+                            <span class="badge route-type-badge {% if route.route_type == 'shuttle' %}bg-success{% elif route.route_type == 'metro' %}bg-info{% elif route.route_type == 'long' %}bg-warning text-dark{% else %}bg-primary{% endif %}">
                                 {{ route.get_route_type_display }}
                             </span>
                         </h5>
@@ -170,7 +171,34 @@
                 </div>
             </div>
             <div class="stops-list" id="stops-{{ route.id }}">
-                {% if route.trips.all %}
+                {% if route.route_type == 'long' %}
+                <!-- Long Road Route - Pickup Points Display -->
+                <div class="p-3 bg-warning bg-opacity-10 border-bottom">
+                    <strong><i class="fas fa-flag-checkered me-2 text-success"></i>Final Destination:</strong> 
+                    {{ route.destination_name|default:"Not specified" }}
+                </div>
+                {% for stop in route.stops.all %}
+                <div class="stop-item">
+                    <div class="stop-name">
+                        <div class="stop-number" style="background: #ffc107; color: #212529;">{{ stop.order }}</div>
+                        <div>
+                            <div><strong>{{ stop.name }}</strong></div>
+                            <small class="text-muted"><i class="fas fa-map-marker-alt text-warning"></i> Pickup Point</small>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="time-scheduled">Pickup Time</div>
+                        <div class="time-eta on-time">
+                            {{ stop.scheduled_time|time:"h:i A"|default:"--:--" }}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-3 text-center text-muted">
+                    No pickup points configured
+                </div>
+                {% endfor %}
+                {% elif route.trips.all %}
                     {% for trip in route.trips.all %}
                     <div class="trip-section">
                         <div class="trip-header" onclick="event.stopPropagation();">

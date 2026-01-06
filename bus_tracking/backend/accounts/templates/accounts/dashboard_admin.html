@@ -34,7 +34,8 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0">
-                    <small>{{ active_buses }} active</small>
+                    <small>{{ active_buses }} active</small> · 
+                    <a href="{% url 'buses:bus_list' %}" class="text-white">Manage Buses</a>
                 </div>
             </div>
         </div>

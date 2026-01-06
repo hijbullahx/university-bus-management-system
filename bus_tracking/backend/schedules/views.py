@@ -49,12 +49,47 @@ def route_detail(request, pk):
 @admin_required
 def route_create(request):
     if request.method == 'POST':
+        route_type = request.POST.get('route_type', 'shuttle')
+        
+        # Handle Long Road route separately
+        if route_type == 'long':
+            route = Route.objects.create(
+                name=request.POST.get('long_route_name', ''),
+                description=request.POST.get('long_description', ''),
+                route_type='long',
+                color=request.POST.get('long_color', '#dc3545'),
+                service_days=request.POST.get('long_service_days', 'sat-thu'),
+                destination_name=request.POST.get('final_destination', ''),
+                is_active=True,
+                is_published=True
+            )
+            
+            # Create pickup points as stops
+            pickup_names = request.POST.getlist('pickup_name[]')
+            pickup_times = request.POST.getlist('pickup_time[]')
+            pickup_orders = request.POST.getlist('pickup_order[]')
+            
+            for i, name in enumerate(pickup_names):
+                if name:
+                    Stop.objects.create(
+                        route=route,
+                        name=name,
+                        latitude=0,
+                        longitude=0,
+                        order=int(pickup_orders[i]) if i < len(pickup_orders) else i + 1,
+                        scheduled_time=pickup_times[i] if i < len(pickup_times) and pickup_times[i] else None,
+                        is_major_stop=True
+                    )
+            
+            messages.success(request, 'Long Road route created successfully.')
+            return redirect('schedules:route_detail', pk=route.pk)
+        
+        # Shuttle/Metro route
         form = RouteForm(request.POST)
         if form.is_valid():
             route = form.save(commit=False)
             route.is_active = True
             route.is_published = True
-            # Handle custom days
             if route.service_days == 'custom':
                 route.custom_days = request.POST.get('custom_days', '')
             route.save()
@@ -90,14 +125,73 @@ def route_create(request):
 def route_edit(request, pk):
     route = get_object_or_404(Route, pk=pk)
     trips = route.trips.order_by('trip_number') if route.is_shuttle_or_metro else None
+    pickup_points = route.stops.order_by('order') if route.route_type == 'long' else None
     
     if request.method == 'POST':
+        route_type = request.POST.get('route_type', route.route_type)
+        
+        # Handle Long Road route
+        if route_type == 'long':
+            route.name = request.POST.get('long_route_name', route.name)
+            route.description = request.POST.get('long_description', '')
+            route.route_type = 'long'
+            route.color = request.POST.get('long_color', '#dc3545')
+            route.service_days = request.POST.get('long_service_days', 'sat-thu')
+            route.destination_name = request.POST.get('final_destination', '')
+            route.is_active = True
+            route.is_published = True
+            route.save()
+            
+            # Handle pickup points (stops)
+            pickup_ids = request.POST.getlist('pickup_id[]')
+            pickup_names = request.POST.getlist('pickup_name[]')
+            pickup_times = request.POST.getlist('pickup_time[]')
+            pickup_orders = request.POST.getlist('pickup_order[]')
+            
+            existing_ids = set(route.stops.values_list('id', flat=True))
+            submitted_ids = set()
+            
+            for i, name in enumerate(pickup_names):
+                if name:
+                    pickup_id = pickup_ids[i] if i < len(pickup_ids) and pickup_ids[i] else None
+                    order = int(pickup_orders[i]) if i < len(pickup_orders) else i + 1
+                    time = pickup_times[i] if i < len(pickup_times) and pickup_times[i] else None
+                    
+                    if pickup_id:
+                        try:
+                            stop = Stop.objects.get(id=int(pickup_id), route=route)
+                            stop.name = name
+                            stop.order = order
+                            stop.scheduled_time = time
+                            stop.save()
+                            submitted_ids.add(int(pickup_id))
+                        except Stop.DoesNotExist:
+                            pass
+                    else:
+                        Stop.objects.create(
+                            route=route,
+                            name=name,
+                            latitude=0,
+                            longitude=0,
+                            order=order,
+                            scheduled_time=time,
+                            is_major_stop=True
+                        )
+            
+            # Delete removed stops
+            stops_to_delete = existing_ids - submitted_ids
+            if stops_to_delete:
+                Stop.objects.filter(id__in=stops_to_delete, route=route).delete()
+            
+            messages.success(request, 'Long Road route updated successfully.')
+            return redirect('schedules:route_detail', pk=pk)
+        
+        # Shuttle/Metro route
         form = RouteForm(request.POST, instance=route)
         if form.is_valid():
             route = form.save(commit=False)
             route.is_active = True
             route.is_published = True
-            # Handle custom days
             if route.service_days == 'custom':
                 route.custom_days = request.POST.get('custom_days', '')
             else:
@@ -111,7 +205,6 @@ def route_edit(request, pk):
                 departure_times = request.POST.getlist('departure_time[]')
                 arrival_times = request.POST.getlist('arrival_time[]')
                 
-                # Get existing trip IDs
                 existing_ids = set(route.trips.values_list('id', flat=True))
                 submitted_ids = set()
                 
@@ -120,7 +213,6 @@ def route_edit(request, pk):
                         trip_id = trip_ids[i] if i < len(trip_ids) and trip_ids[i] else None
                         
                         if trip_id:
-                            # Update existing trip
                             try:
                                 trip = Trip.objects.get(id=int(trip_id), route=route)
                                 trip.trip_number = int(trip_num)
@@ -133,7 +225,6 @@ def route_edit(request, pk):
                             except Trip.DoesNotExist:
                                 pass
                         else:
-                            # Create new trip
                             Trip.objects.create(
                                 route=route,
                                 name=f"Trip {int(trip_num):02d}",
@@ -143,7 +234,6 @@ def route_edit(request, pk):
                                 order=i
                             )
                 
-                # Delete removed trips
                 trips_to_delete = existing_ids - submitted_ids
                 if trips_to_delete:
                     Trip.objects.filter(id__in=trips_to_delete, route=route).delete()
@@ -157,7 +247,8 @@ def route_edit(request, pk):
         'form': form, 
         'title': 'Edit Route', 
         'route': route,
-        'trips': trips
+        'trips': trips,
+        'pickup_points': pickup_points
     })
 
 

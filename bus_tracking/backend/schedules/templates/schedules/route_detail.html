@@ -84,6 +84,9 @@
                         <a href="{% url 'schedules:trip_create' route.id %}" class="btn btn-outline-info">
                             <i class="fas fa-clock me-2"></i>Add Trip
                         </a>
+                        <a href="{% url 'schedules:route_delete' route.id %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-2"></i>Delete Route
+                        </a>
                     </div>
                     {% endif %}
                 </div>
@@ -243,6 +246,55 @@
                     </div>
                     {% else %}
                     <!-- Long Road Style Display -->
+                    {% if route.route_type == 'long' %}
+                    <div class="alert alert-warning border mb-3">
+                        <strong><i class="fas fa-flag-checkered me-2"></i>Final Destination:</strong> {{ route.destination_name|default:"Not specified" }}
+                        {% if route.service_days %}
+                        <span class="float-end">
+                            <strong>Service Days:</strong> {{ route.get_service_days_display }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <h6 class="mb-3"><i class="fas fa-map-marker-alt me-2 text-warning"></i>Pickup Points</h6>
+                    <div class="list-group">
+                        {% for stop in route.stops.all %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-warning text-dark me-2">{{ stop.order }}</span>
+                                <strong>{{ stop.name }}</strong>
+                            </div>
+                            <div>
+                                {% if stop.scheduled_time %}
+                                <span class="badge bg-dark fs-6">
+                                    <i class="fas fa-clock me-1"></i>{{ stop.scheduled_time|time:"h:i A" }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">No time set</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted">
+                            <i class="fas fa-info-circle me-2"></i>No pickup points configured.
+                            {% if user.is_admin_user %}
+                            <a href="{% url 'schedules:route_edit' route.id %}">Add pickup points</a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if route.stops.exists %}
+                    <div class="mt-3 p-3 bg-light border rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-flag-checkered text-success me-3 fs-4"></i>
+                            <div>
+                                <small class="text-muted">Final Stop</small>
+                                <h5 class="mb-0">{{ route.destination_name }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <!-- Generic trip display for other types -->
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -288,15 +340,13 @@
                                 <tr>
                                     <td colspan="{% if user.is_admin_user %}8{% else %}7{% endif %}" class="text-center text-muted py-4">
                                         <i class="fas fa-info-circle me-2"></i>No trips configured.
-                                        {% if user.is_admin_user %}
-                                        <a href="{% url 'schedules:trip_create' route.id %}">Create first trip</a>
-                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>
