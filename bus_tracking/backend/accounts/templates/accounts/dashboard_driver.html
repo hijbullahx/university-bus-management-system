@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% block title %}Driver Dashboard - Bus Tracking{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="bi bi-person-badge me-2"></i>Driver Dashboard</h2>
+                <p class="text-muted">Welcome, {{ user.get_full_name|default:user.username }}</p>
+            </div>
+            <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#issueModal">
+                <i class="bi bi-exclamation-triangle me-2"></i>Report Issue
+            </button>
+        </div>
+    </div>
+
+    {% if assignment %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-bus-front me-2"></i>Assigned Bus
+                </div>
+                <div class="card-body">
+                    <h3 class="text-primary">{{ assignment.bus.bus_number }}</h3>
+                    <p class="mb-1"><strong>Capacity:</strong> {{ assignment.bus.capacity }} passengers</p>
+                    <p class="mb-0"><strong>Status:</strong> 
+                        <span class="badge bg-{{ assignment.bus.is_active|yesno:'success,secondary' }}">
+                            {{ assignment.bus.is_active|yesno:'Active,Inactive' }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-signpost-2 me-2"></i>Current Route
+                </div>
+                <div class="card-body">
+                    <h4 class="text-success">{{ assignment.route.name }}</h4>
+                    <p class="mb-1">{{ assignment.route.description|truncatechars:50 }}</p>
+                    <p class="mb-0"><strong>Stops:</strong> {{ assignment.route.stops.count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-info">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-clock me-2"></i>Shift Time
+                </div>
+                <div class="card-body">
+                    <h4 class="text-info">{{ assignment.shift_start|time:"H:i" }} - {{ assignment.shift_end|time:"H:i" }}</h4>
+                    <p class="mb-0"><strong>Date:</strong> {{ assignment.date }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-geo me-2"></i>Route Stops</span>
+                    <div>
+                        <button id="startRouteBtn" class="btn btn-success btn-sm me-2" onclick="startRoute()">
+                            <i class="bi bi-play-fill me-1"></i>Start Route
+                        </button>
+                        <button id="stopRouteBtn" class="btn btn-danger btn-sm d-none" onclick="stopRoute()">
+                            <i class="bi bi-stop-fill me-1"></i>Stop Route
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Stop Name</th>
+                                    <th>Scheduled Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stopsTable">
+                                {% for stop in assignment.route.stops.all %}
+                                <tr class="{% if forloop.first %}table-primary{% endif %}" id="stop-{{ stop.id }}">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ stop.name }}</td>
+                                    <td>{{ stop.scheduled_time|time:"H:i" }}</td>
+                                    <td>
+                                        {% if forloop.first %}
+                                            <span class="badge bg-primary">Next Stop</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No stops configured</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                You don't have any active assignment. Please contact the administrator.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <i class="bi bi-journal-text me-2"></i>Recent Issues Reported
+                </div>
+                <div class="card-body">
+                    {% if recent_issues %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for issue in recent_issues %}
+                                    <tr>
+                                        <td><span class="badge bg-warning">{{ issue.get_issue_type_display }}</span></td>
+                                        <td>{{ issue.description|truncatechars:50 }}</td>
+                                        <td><span class="badge bg-{{ issue.status }}">{{ issue.get_status_display }}</span></td>
+                                        <td>{{ issue.created_at|date:"M d, H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No recent issues</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="issueModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Report Issue</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="issueForm" method="post" action="{% url 'issues:create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Issue Type</label>
+                        <select name="issue_type" class="form-select" required>
+                            <option value="mechanical">Mechanical Breakdown</option>
+                            <option value="traffic">Heavy Traffic Delay</option>
+                            <option value="emergency">Emergency</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Provide additional details..."></textarea>
+                    </div>
+                    <input type="hidden" name="latitude" id="issueLatitude">
+                    <input type="hidden" name="longitude" id="issueLongitude">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let isTracking = false;
+let watchId = null;
+
+function startRoute() {
+    if (navigator.geolocation) {
+        document.getElementById('startRouteBtn').classList.add('d-none');
+        document.getElementById('stopRouteBtn').classList.remove('d-none');
+        isTracking = true;
+        
+        watchId = navigator.geolocation.watchPosition(
+            position => {
+                sendLocation(position.coords.latitude, position.coords.longitude);
+            },
+            error => {
+                console.error('GPS Error:', error);
+                alert('Unable to access GPS. Please enable location services.');
+            },
+            { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+        );
+    } else {
+        alert('Geolocation is not supported by your browser.');
+    }
+}
+
+function stopRoute() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    isTracking = false;
+    document.getElementById('startRouteBtn').classList.remove('d-none');
+    document.getElementById('stopRouteBtn').classList.add('d-none');
+    
+    fetch('/api/buses/stop-tracking/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    });
+}
+
+function sendLocation(lat, lng) {
+    fetch('/api/buses/update-location/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ latitude: lat, longitude: lng })
+    });
+}
+
+document.getElementById('issueModal').addEventListener('show.bs.modal', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            document.getElementById('issueLatitude').value = position.coords.latitude;
+            document.getElementById('issueLongitude').value = position.coords.longitude;
+        });
+    }
+});
+</script>
+{% endblock %}

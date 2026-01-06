@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - Bus Tracking{% endblock %}
+
+{% block extra_css %}
+<style>
+    .route-type-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #dee2e6;
+    }
+    .route-type-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+    }
+    .route-type-card.selected {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+    .route-type-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .route-type-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .trip-row {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .trip-row:hover {
+        background-color: #e9ecef;
+    }
+    .trip-number {
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: #0d6efd;
+    }
+    .section-box {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        background: white;
+    }
+    .section-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .shuttle-config {
+        display: none;
+    }
+    .shuttle-config.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'schedules:route_list' %}">Routes</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <form method="post" id="routeForm">
+        {% csrf_token %}
+        
+        <!-- SECTION 1: Route Type Selection -->
+        <div class="section-box">
+            <div class="section-title">
+                <i class="fas fa-road"></i> Step 1: Select Route Type
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="route-type-card card h-100 text-center p-4" data-type="shuttle">
+                        <div class="route-type-icon text-primary">🚌</div>
+                        <h5>Shuttle Bus</h5>
+                        <p class="text-muted small mb-0">Campus to destination shuttle service</p>
+                        <input type="radio" name="route_type" value="shuttle" class="d-none" 
+                               {% if form.instance.route_type == 'shuttle' or not form.instance.pk %}checked{% endif %}>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="route-type-card card h-100 text-center p-4" data-type="metro">
+                        <div class="route-type-icon text-info">🚆</div>
+                        <h5>Metro Bus</h5>
+                        <p class="text-muted small mb-0">Metro-style fixed route service</p>
+                        <input type="radio" name="route_type" value="metro" class="d-none"
+                               {% if form.instance.route_type == 'metro' %}checked{% endif %}>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="route-type-card card h-100 text-center p-4 disabled" data-type="long">
+                        <div class="route-type-icon text-secondary">🛣️</div>
+                        <h5>Long Road Bus</h5>
+                        <p class="text-muted small mb-0">Coming soon...</p>
+                        <input type="radio" name="route_type" value="long" class="d-none" disabled
+                               {% if form.instance.route_type == 'long' %}checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Shuttle/Metro Configuration -->
+        <div class="shuttle-config active" id="shuttleConfig">
+            <!-- Route Header -->
+            <div class="section-box">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i> Step 2: Route Information
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Route Title <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        <div class="form-text">e.g., Campus – Azampur – Campus</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Service Days</label>
+                        {{ form.service_days }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Route Color</label>
+                        {{ form.color }}
+                    </div>
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-4">
+                        <label class="form-label">Origin (Start Point)</label>
+                        {{ form.origin_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Destination (End Point)</label>
+                        {{ form.destination_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Est. Duration (mins)</label>
+                        {{ form.estimated_duration_mins }}
+                    </div>
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-12">
+                        <label class="form-label">Description (Optional)</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trip Schedule Table -->
+            <div class="section-box">
+                <div class="section-title">
+                    <i class="fas fa-clock"></i> Step 3: Trip Schedule
+                </div>
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Define each trip with <strong>Campus Time</strong> (departure from origin) and <strong>Destination Time</strong> (arrival at destination).
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tripTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">Trip No</th>
+                                <th>Campus Time (Departure)</th>
+                                <th>Destination Time (Arrival)</th>
+                                <th style="width: 80px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tripTableBody">
+                            {% if trips %}
+                                {% for trip in trips %}
+                                <tr class="trip-row-item" data-trip-id="{{ trip.id }}">
+                                    <td>
+                                        <span class="trip-number">{{ trip.formatted_trip_number }}</span>
+                                        <input type="hidden" name="trip_id[]" value="{{ trip.id }}">
+                                        <input type="hidden" name="trip_number[]" value="{{ trip.trip_number }}">
+                                    </td>
+                                    <td>
+                                        <input type="time" name="departure_time[]" value="{{ trip.departure_time|time:'H:i' }}" class="form-control" required>
+                                    </td>
+                                    <td>
+                                        <input type="time" name="arrival_time[]" value="{{ trip.arrival_time|time:'H:i' }}" class="form-control">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-trip-btn" title="Remove Trip">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr class="trip-row-item" data-trip-id="">
+                                    <td>
+                                        <span class="trip-number">01</span>
+                                        <input type="hidden" name="trip_id[]" value="">
+                                        <input type="hidden" name="trip_number[]" value="1">
+                                    </td>
+                                    <td>
+                                        <input type="time" name="departure_time[]" value="07:00" class="form-control" required>
+                                    </td>
+                                    <td>
+                                        <input type="time" name="arrival_time[]" value="07:30" class="form-control">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-trip-btn" title="Remove Trip">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="addTripBtn">
+                        <i class="fas fa-plus me-2"></i>Add Trip
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Section -->
+        <div class="section-box">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{% url 'schedules:route_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+                <button type="submit" name="action" value="save" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>Save Route
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Route type selection
+    const typeCards = document.querySelectorAll('.route-type-card:not(.disabled)');
+    typeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            typeCards.forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
+            
+            const type = this.dataset.type;
+            const shuttleConfig = document.getElementById('shuttleConfig');
+            if (type === 'shuttle' || type === 'metro') {
+                shuttleConfig.classList.add('active');
+            } else {
+                shuttleConfig.classList.remove('active');
+            }
+        });
+        
+        // Set initial selection
+        if (card.querySelector('input[type="radio"]').checked) {
+            card.classList.add('selected');
+        }
+    });
+
+    // Add trip functionality
+    let tripCount = document.querySelectorAll('.trip-row-item').length;
+    
+    document.getElementById('addTripBtn').addEventListener('click', function() {
+        tripCount++;
+        const tripNumber = String(tripCount).padStart(2, '0');
+        
+        const newRow = document.createElement('tr');
+        newRow.className = 'trip-row-item';
+        newRow.dataset.tripId = '';
+        newRow.innerHTML = `
+            <td>
+                <span class="trip-number">${tripNumber}</span>
+                <input type="hidden" name="trip_id[]" value="">
+                <input type="hidden" name="trip_number[]" value="${tripCount}">
+            </td>
+            <td>
+                <input type="time" name="departure_time[]" class="form-control" required>
+            </td>
+            <td>
+                <input type="time" name="arrival_time[]" class="form-control">
+            </td>
+            <td>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-trip-btn" title="Remove Trip">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        document.getElementById('tripTableBody').appendChild(newRow);
+        attachRemoveHandler(newRow.querySelector('.remove-trip-btn'));
+    });
+
+    // Remove trip functionality
+    function attachRemoveHandler(btn) {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            if (document.querySelectorAll('.trip-row-item').length > 1) {
+                row.remove();
+                renumberTrips();
+            } else {
+                alert('At least one trip is required.');
+            }
+        });
+    }
+
+    // Attach to existing remove buttons
+    document.querySelectorAll('.remove-trip-btn').forEach(attachRemoveHandler);
+
+    // Renumber trips after removal
+    function renumberTrips() {
+        const rows = document.querySelectorAll('.trip-row-item');
+        rows.forEach((row, index) => {
+            const num = String(index + 1).padStart(2, '0');
+            row.querySelector('.trip-number').textContent = num;
+            row.querySelector('input[name="trip_number[]"]').value = index + 1;
+        });
+        tripCount = rows.length;
+    }
+});
+</script>
+{% endblock %}

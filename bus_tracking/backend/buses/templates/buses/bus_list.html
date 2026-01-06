@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Buses - Bus Tracking{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2><i class="bi bi-bus-front me-2"></i>All Buses</h2>
+            {% if user.is_admin_user %}
+            <a href="{% url 'buses:bus_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add Bus
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="btn-group" role="group">
+                <a href="{% url 'buses:bus_list' %}" class="btn btn-outline-secondary {% if not request.GET.status %}active{% endif %}">All</a>
+                <a href="?status=active" class="btn btn-outline-success {% if request.GET.status == 'active' %}active{% endif %}">Active</a>
+                <a href="?status=inactive" class="btn btn-outline-danger {% if request.GET.status == 'inactive' %}active{% endif %}">Inactive</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for bus in buses %}
+        <div class="col-md-4 col-lg-3 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{ bus.bus_number }}</strong>
+                    <span class="badge bg-{{ bus.is_active|yesno:'success,secondary' }}">
+                        {{ bus.is_active|yesno:'Active,Inactive' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><i class="bi bi-credit-card me-2"></i>{{ bus.license_plate }}</p>
+                    <p class="mb-1"><i class="bi bi-people me-2"></i>{{ bus.capacity }} seats</p>
+                    <p class="mb-1"><i class="bi bi-signpost me-2"></i>{{ bus.current_route.name|default:"No Route" }}</p>
+                    {% if bus.model %}
+                    <p class="mb-0 text-muted small">{{ bus.model }} {% if bus.year %}({{ bus.year }}){% endif %}</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'buses:bus_detail' bus.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                    <a href="{% url 'buses:follow_bus' bus.id %}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-geo-alt"></i> Track
+                    </a>
+                    {% if user.is_admin_user %}
+                    <a href="{% url 'buses:bus_edit' bus.id %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i>No buses found.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if buses.has_other_pages %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if buses.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ buses.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in buses.paginator.page_range %}
+            <li class="page-item {% if buses.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if buses.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ buses.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

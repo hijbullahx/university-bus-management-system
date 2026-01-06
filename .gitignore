@@ -1,0 +1,112 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+static/collected/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Streamlit
+.streamlit/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+
+# Secrets and credentials
+*.pem
+*.key
+secrets.json
+credentials.json

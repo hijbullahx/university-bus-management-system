@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}{% if notification %}Edit{% else %}Send{% endif %} Notification - Bus Tracking{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-bell me-2"></i>
+                        {% if notification %}Edit Notification{% else %}Send Notification{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            {{ form.message }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Priority</label>
+                                {{ form.priority }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Target Audience</label>
+                                {{ form.target }}
+                            </div>
+                        </div>
+                        <div class="mb-3" id="routeField" style="display: none;">
+                            <label class="form-label">Specific Route</label>
+                            {{ form.target_route }}
+                            <small class="text-muted">Select if targeting a specific route</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Expires At (Optional)</label>
+                            {{ form.expires_at }}
+                            <small class="text-muted">Leave empty for no expiration</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'notifications:list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>{% if notification %}Update{% else %}Send{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const targetSelect = document.querySelector('[name="target"]');
+    const routeField = document.getElementById('routeField');
+    
+    function toggleRouteField() {
+        routeField.style.display = targetSelect.value === 'route' ? 'block' : 'none';
+    }
+    
+    targetSelect.addEventListener('change', toggleRouteField);
+    toggleRouteField();
+});
+</script>
+{% endblock %}

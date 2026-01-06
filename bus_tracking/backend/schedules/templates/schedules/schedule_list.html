@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Schedules - Bus Tracking{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2><i class="bi bi-calendar-week me-2"></i>Schedules</h2>
+            {% if user.is_admin_user %}
+            <a href="{% url 'schedules:schedule_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add Schedule
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <form method="get" class="row g-2">
+                <div class="col-md-4">
+                    <select name="route" class="form-select">
+                        <option value="">All Routes</option>
+                        {% for route in routes %}
+                        <option value="{{ route.id }}" {% if request.GET.route == route.id|stringformat:"i" %}selected{% endif %}>{{ route.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select name="day" class="form-select">
+                        <option value="">All Days</option>
+                        <option value="mon" {% if request.GET.day == 'mon' %}selected{% endif %}>Monday</option>
+                        <option value="tue" {% if request.GET.day == 'tue' %}selected{% endif %}>Tuesday</option>
+                        <option value="wed" {% if request.GET.day == 'wed' %}selected{% endif %}>Wednesday</option>
+                        <option value="thu" {% if request.GET.day == 'thu' %}selected{% endif %}>Thursday</option>
+                        <option value="fri" {% if request.GET.day == 'fri' %}selected{% endif %}>Friday</option>
+                        <option value="sat" {% if request.GET.day == 'sat' %}selected{% endif %}>Saturday</option>
+                        <option value="sun" {% if request.GET.day == 'sun' %}selected{% endif %}>Sunday</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Route</th>
+                            <th>Day</th>
+                            <th>Departure</th>
+                            <th>Arrival</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            {% if user.is_admin_user %}<th>Actions</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td><a href="{% url 'schedules:route_detail' schedule.route.id %}">{{ schedule.route.name }}</a></td>
+                            <td>{{ schedule.get_day_of_week_display }}</td>
+                            <td>{{ schedule.departure_time|time:"H:i" }}</td>
+                            <td>{{ schedule.arrival_time|time:"H:i" }}</td>
+                            <td>
+                                <span class="badge bg-{{ schedule.is_active|yesno:'success,secondary' }}">
+                                    {{ schedule.is_active|yesno:'Active,Inactive' }}
+                                </span>
+                            </td>
+                            <td class="text-muted">{{ schedule.notes|truncatechars:30|default:"-" }}</td>
+                            {% if user.is_admin_user %}
+                            <td>
+                                <a href="{% url 'schedules:schedule_edit' schedule.id %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'schedules:schedule_delete' schedule.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No schedules found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if schedules.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if schedules.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ schedules.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in schedules.paginator.page_range %}
+            <li class="page-item {% if schedules.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if schedules.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ schedules.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
