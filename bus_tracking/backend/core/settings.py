@@ -1,4 +1,9 @@
 
+# Ensure bus_tracking is in the Python path for deployment
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
