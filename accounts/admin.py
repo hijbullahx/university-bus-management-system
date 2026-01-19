@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, DriverProfile
+from .models_feedback import Feedback
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -15,6 +16,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
         ('Additional Info', {'fields': ('role', 'phone', 'employee_id')}),
     )
+admin.site.register(Feedback)
 
 @admin.register(DriverProfile)
 class DriverProfileAdmin(admin.ModelAdmin):

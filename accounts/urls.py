@@ -25,4 +25,5 @@ urlpatterns = [
     # User pages
     path('home/', views.user_home, name='user_home'),
     path('live-map/', views.user_live_map, name='user_live_map'),
+    path('feedback/', views.submit_feedback, name='submit_feedback'),
 ]

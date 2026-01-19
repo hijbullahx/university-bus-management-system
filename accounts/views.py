@@ -5,12 +5,49 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
 from .forms import LoginForm, UserRegistrationForm, UserProfileForm
 from .models import User
+from .models_feedback import Feedback
 from buses.models import Bus, BusAssignment
 from schedules.models import Route, Schedule
 from issues.models import Issue
 from notifications.models import Notification
+
+# Feedback view for authority to send feedback to admin
+@login_required
+def submit_feedback(request):
+    if not request.user.is_authority:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+
+    if request.method == 'POST':
+        feedback = request.POST.get('feedback', '').strip()
+        if not feedback:
+            messages.error(request, 'Feedback cannot be empty.')
+            return redirect('accounts:dashboard')
+
+        # Store feedback in database
+        Feedback.objects.create(
+            user=request.user,
+            feedback_type='authority',
+            message=feedback
+        )
+        messages.success(request, 'Feedback submitted successfully!')
+        # Optionally, send email to admin (can be enabled if SMTP is configured)
+        # admin_email = getattr(settings, 'ADMIN_EMAIL', None)
+        # if admin_email:
+        #     subject = f"Feedback from Authority: {request.user.get_full_name() or request.user.username}"
+        #     message = feedback
+        #     from_email = request.user.email or None
+        #     try:
+        #         send_mail(subject, message, from_email, [admin_email], fail_silently=True)
+        #     except Exception:
+        #         pass
+        return redirect('accounts:dashboard')
+    else:
+        return redirect('accounts:dashboard')
 
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
@@ -18,7 +55,18 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        return reverse_lazy('accounts:dashboard')
+        user = self.request.user
+        if user.is_admin_user:
+            return reverse_lazy('accounts:dashboard')  # Admin dashboard
+        elif user.is_driver:
+            return reverse_lazy('accounts:dashboard')  # Driver dashboard
+        elif user.is_authority:
+            return reverse_lazy('accounts:dashboard')  # Authority dashboard
+        elif user.is_regular_user:
+            # Redirect regular users to schedules page as their home
+            return reverse_lazy('schedules:schedule_list')
+        else:
+            return reverse_lazy('accounts:dashboard')
 
 
 class CustomLogoutView(LogoutView):
@@ -43,10 +91,15 @@ def dashboard(request):
     user = request.user
     context = {'user': user}
 
-    if user.is_regular_user:
-        # Regular users go directly to schedules page as their home
-        return redirect('schedules:schedule_list')
-
+    if user.is_admin_user:
+        context['total_buses'] = Bus.objects.count()
+        context['active_buses'] = Bus.objects.filter(is_active=True).count()
+        context['total_routes'] = Route.objects.count()
+        context['total_drivers'] = User.objects.filter(role='driver').count()
+        context['pending_issues'] = Issue.objects.filter(status='pending').count()
+        context['pending_registrations'] = User.objects.filter(approval_status='pending').count()
+        context['total_users'] = User.objects.exclude(role__in=['admin', 'driver']).count()
+        return render(request, 'accounts/dashboard_admin.html', context)
     elif user.is_driver:
         try:
             assignment = BusAssignment.objects.select_related('bus', 'route').get(
@@ -57,22 +110,10 @@ def dashboard(request):
             context['route'] = assignment.route
         except BusAssignment.DoesNotExist:
             context['assignment'] = None
-        
         context['recent_issues'] = Issue.objects.filter(
             reported_by=user
         ).order_by('-created_at')[:5]
         return render(request, 'accounts/dashboard_driver.html', context)
-
-    elif user.is_admin_user:
-        context['total_buses'] = Bus.objects.count()
-        context['active_buses'] = Bus.objects.filter(is_active=True).count()
-        context['total_routes'] = Route.objects.count()
-        context['total_drivers'] = User.objects.filter(role='driver').count()
-        context['pending_issues'] = Issue.objects.filter(status='pending').count()
-        context['pending_registrations'] = User.objects.filter(approval_status='pending').count()
-        context['total_users'] = User.objects.exclude(role__in=['admin', 'driver']).count()
-        return render(request, 'accounts/dashboard_admin.html', context)
-
     elif user.is_authority:
         context['total_buses'] = Bus.objects.count()
         context['active_buses'] = Bus.objects.filter(is_active=True).count()
@@ -80,7 +121,9 @@ def dashboard(request):
         context['total_users'] = User.objects.filter(role__in=['student', 'faculty', 'staff']).count()
         context['total_drivers'] = User.objects.filter(role='driver').count()
         return render(request, 'accounts/dashboard_authority.html', context)
-
+    elif user.is_regular_user:
+        # Regular users go directly to schedules page as their home
+        return redirect('schedules:schedule_list')
     return render(request, 'accounts/dashboard_user.html', context)
 
 

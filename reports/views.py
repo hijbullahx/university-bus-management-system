@@ -184,12 +184,20 @@ def authority_reports(request):
     recent_issues = Issue.objects.select_related('reported_by', 'bus', 'route').order_by('-created_at')[:10]
     
     # Route performance summary
-    route_performance = RouteAnalytics.objects.filter(
+    route_performance_qs = RouteAnalytics.objects.filter(
         date__gte=last_30_days
     ).values('route__name').annotate(
         total_trips=Sum('total_trips'),
-        on_time_pct=Avg('on_time_trips') * 100 / Avg('total_trips')
+        on_time_trips=Sum('on_time_trips')
     ).order_by('-total_trips')[:5]
+
+    # Calculate on_time_pct in Python
+    route_performance = []
+    for rp in route_performance_qs:
+        total = rp.get('total_trips') or 0
+        on_time = rp.get('on_time_trips') or 0
+        rp['on_time_pct'] = (on_time * 100 / total) if total else 0
+        route_performance.append(rp)
     
     return render(request, 'reports/authority_reports.html', {
         'stats': stats,
