@@ -1,8 +1,13 @@
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env.render if deploying on Render
+if os.getenv('RENDER', 'False').lower() == 'true':
+    load_dotenv(dotenv_path=Path(__file__).resolve().parent / '.env.render')
+else:
+    load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
