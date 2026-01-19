@@ -1,3 +1,28 @@
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
+
+# Automatically create default admin and authority users after migrations (for Render, free tier)
+@receiver(post_migrate)
+def create_default_users(sender, **kwargs):
+    from accounts.models import User
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='admin123',
+            role='admin',
+            is_active=True,
+            approval_status='approved'
+        )
+    if not User.objects.filter(username='authority').exists():
+        User.objects.create_user(
+            username='authority',
+            email='authority@example.com',
+            password='authority123',
+            role='authority',
+            is_active=True,
+            approval_status='approved'
+        )
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
