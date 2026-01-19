@@ -10,17 +10,13 @@ pip install -r requirements.txt
 
 
 # Collect static files
-if [ -f bus_tracking/manage.py ]; then
-	python bus_tracking/manage.py collectstatic --noinput
-	python bus_tracking/manage.py migrate --noinput
-	# (Optional) Seed initial data
-	# python bus_tracking/manage.py loaddata initial_data.json
-else
-	python manage.py collectstatic --noinput
-	python manage.py migrate --noinput
-	# (Optional) Seed initial data
-	# python manage.py loaddata initial_data.json
-fi
+python manage.py collectstatic --noinput
+
+# Apply migrations
+python manage.py migrate --noinput
+
+# (Optional) Seed initial data
+# python manage.py loaddata initial_data.json
 
 # Print success message
 echo "Build completed successfully."
