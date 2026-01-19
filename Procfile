@@ -1,0 +1,1 @@
+web: gunicorn core.wsgi --chdir bus_tracking/backend --log-file -
