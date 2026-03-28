@@ -29,8 +29,6 @@ INSTALLED_APPS = [
     'notifications',
     'reports',
     'locations',
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
