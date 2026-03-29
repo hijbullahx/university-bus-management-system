@@ -157,7 +157,40 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            {% include 'schedules/partials/trip_schedule_table.html' with bus=bus %}
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th style="width: 100px;">Trip No</th>
+                                        <th>Departure Time</th>
+                                        <th>Arrival Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trip in bus.current_route.trips.all %}
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary fs-6">{{ trip.formatted_trip_number }}</span>
+                                        </td>
+                                        <td><strong>{{ trip.departure_time|time:"h:i A" }}</strong></td>
+                                        <td>{{ trip.arrival_time|time:"h:i A"|default:"-" }}</td>
+                                        <td>
+                                            {% if trip.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            <i class="fas fa-info-circle me-2"></i>No trips scheduled.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
