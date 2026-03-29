@@ -64,10 +64,9 @@ class ScheduleForm(forms.ModelForm):
 class TripForm(forms.ModelForm):
     class Meta:
         model = Trip
-        fields = ['name', 'trip_type', 'departure_time', 'arrival_time', 'is_active', 'order']
+        fields = ['name', 'departure_time', 'arrival_time', 'is_active', 'order']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Morning Trip 1'}),
-            'trip_type': forms.Select(attrs={'class': 'form-select'}),
             'departure_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'arrival_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

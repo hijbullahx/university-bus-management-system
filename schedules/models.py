@@ -125,16 +125,9 @@ class ScheduleException(models.Model):
 
 class Trip(models.Model):
     """Represents a specific trip on a route (e.g., Trip 01, Trip 02)"""
-    TRIP_TYPE_CHOICES = [
-        ('morning', 'Morning'),
-        ('afternoon', 'Afternoon'),
-        ('evening', 'Evening'),
-    ]
-    
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='trips')
     name = models.CharField(max_length=100)
     trip_number = models.PositiveIntegerField(default=1, help_text='Trip sequence number')
-    trip_type = models.CharField(max_length=20, choices=TRIP_TYPE_CHOICES, default='morning')
     departure_time = models.TimeField(help_text='Campus/Origin departure time')
     arrival_time = models.TimeField(null=True, blank=True, help_text='Destination arrival time (optional for last trip)')
     is_active = models.BooleanField(default=True)

@@ -270,8 +270,7 @@
                                 <td>{{ trip.departure_time|time:"h:i A" }}</td>
                                 <td>{{ trip.arrival_time|time:"h:i A"|default:"-" }}</td>
                                 <td>
-                                    <span class="badge bg-{% if trip.trip_type == 'morning' %}info{% elif trip.trip_type == 'afternoon' %}warning{% else %}secondary{% endif %}">
-                                        {{ trip.get_trip_type_display }}
+                                    <span class="badge bg-{% if trip.trip_type == 'morning' %}info{% elif trip.trip_type == 'afternoon' %}warning{% else %}secondary{% endif %}">{{ trip.get_trip_type_display }}</span>
                                     </span>
                                 </td>
                             </tr>

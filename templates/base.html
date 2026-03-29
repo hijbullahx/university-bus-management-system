@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     
     <style>
+
         :root {
             --primary-color: #0d6efd;
             --secondary-color: #6c757d;
@@ -343,31 +344,42 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container-fluid">
-            <button class="navbar-toggler d-lg-none me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
             <a class="navbar-brand" href="{% url 'accounts:dashboard' %}">
                 <i class="fas fa-bus me-2"></i>UBus Tracker
             </a>
-            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:dashboard' %}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'locations:live_map' %}">
-                            <i class="fas fa-map-marked-alt me-1"></i>Live Map
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'schedules:schedule_list' %}">
-                            <i class="fas fa-calendar-alt me-1"></i>Schedules
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        {% if user.is_regular_user or user.is_authority %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'schedules:route_list' %}">
+                                <i class="fas fa-route me-1"></i>Routes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'buses:bus_list' %}">
+                                <i class="fas fa-bus me-1"></i>Buses
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'locations:live_map' %}">
+                                <i class="fas fa-map-marked-alt me-1"></i>Live Map
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'schedules:schedule_list' %}">
+                                <i class="fas fa-calendar-alt me-1"></i>Schedules
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
                 
