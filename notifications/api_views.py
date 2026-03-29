@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db import models
 from .models import Notification, UserNotification
 from .serializers import NotificationSerializer, UserNotificationSerializer
+from .api_dismiss import dismiss_notification_api
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -123,3 +124,23 @@ def unread_count_api(request):
         user=request.user, is_read=False
     ).count()
     return Response({'unread_count': count})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def dismiss_notification_api(request, pk):
+    try:
+        user_notification = UserNotification.objects.get(
+            notification_id=pk, user=request.user
+        )
+        user_notification.is_read = True
+        user_notification.read_at = timezone.now()
+        user_notification.save()
+        return Response({'status': 'dismissed'})
+    except UserNotification.DoesNotExist:
+        UserNotification.objects.create(
+            notification_id=pk,
+            user=request.user,
+            is_read=True,
+            read_at=timezone.now()
+        )
+        return Response({'status': 'dismissed'})

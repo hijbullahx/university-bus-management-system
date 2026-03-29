@@ -77,9 +77,25 @@
                             {% endif %}
                         </div>
                         <div class="card-footer bg-transparent">
-                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#timetableModal{{ route.id }}">
-                                <i class="fas fa-clock me-2"></i>View Timetable
-                            </button>
+                            <div class="d-flex flex-column gap-2">
+                                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#timetableModal{{ route.id }}">
+                                    <i class="fas fa-clock me-2"></i>View Timetable
+                                </button>
+                                {% if user.is_regular_user %}
+                                    {% if route.id in assignment_map %}
+                                        {% with shown=0 %}
+                                            {% for assignment in assignment_map|get_item:route.id %}
+                                                {% if assignment.driver and not shown %}
+                                                    <a class="btn btn-outline-success w-100" href="{% url 'locations:live_map' %}?driver_id={{ assignment.driver.id }}" target="_blank">
+                                                        <i class="fas fa-map-marker-alt me-2"></i>Live on Map
+                                                    </a>
+                                                    {% with shown=1 %}{% endwith %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -136,9 +152,25 @@
                             {% endif %}
                         </div>
                         <div class="card-footer bg-transparent">
-                            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#timetableModal{{ route.id }}">
-                                <i class="fas fa-clock me-2"></i>View Timetable
-                            </button>
+                            <div class="d-flex flex-column gap-2">
+                                <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#timetableModal{{ route.id }}">
+                                    <i class="fas fa-clock me-2"></i>View Timetable
+                                </button>
+                                {% if user.is_regular_user %}
+                                    {% if route.id in assignment_map %}
+                                        {% with shown=0 %}
+                                            {% for assignment in assignment_map|get_item:route.id %}
+                                                {% if assignment.driver and not shown %}
+                                                    <a class="btn btn-outline-success w-100" href="{% url 'locations:live_map' %}?driver_id={{ assignment.driver.id }}" target="_blank">
+                                                        <i class="fas fa-map-marker-alt me-2"></i>Live on Map
+                                                    </a>
+                                                    {% with shown=1 %}{% endwith %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -198,9 +230,25 @@
                             {% endif %}
                         </div>
                         <div class="card-footer bg-transparent">
-                            <button class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#pickupModal{{ route.id }}">
-                                <i class="fas fa-list me-2"></i>View Pickup Points
-                            </button>
+                            <div class="d-flex flex-column gap-2">
+                                <button class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#pickupModal{{ route.id }}">
+                                    <i class="fas fa-list me-2"></i>View Pickup Points
+                                </button>
+                                {% if user.is_regular_user %}
+                                    {% if route.id in assignment_map %}
+                                        {% with shown=0 %}
+                                            {% for assignment in assignment_map|get_item:route.id %}
+                                                {% if assignment.driver and not shown %}
+                                                    <a class="btn btn-outline-success w-100" href="{% url 'locations:live_map' %}?driver_id={{ assignment.driver.id }}" target="_blank">
+                                                        <i class="fas fa-map-marker-alt me-2"></i>Live on Map
+                                                    </a>
+                                                    {% with shown=1 %}{% endwith %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -600,23 +600,22 @@
                 .then(data => {
                     const countBadge = document.querySelector('.notification-count');
                     const notificationList = document.getElementById('notificationList');
-                    
                     if (data.length > 0) {
                         countBadge.textContent = data.length;
                         countBadge.style.display = 'inline';
-                        
                         notificationList.innerHTML = data.slice(0, 5).map(n => `
-                            <a href="/notifications/${n.notification_id}/" class="notification-item d-block text-decoration-none">
-                                <div class="d-flex align-items-start">
-                                    <i class="fas fa-${n.priority === 'danger' ? 'exclamation-triangle text-danger' : 
-                                                       n.priority === 'warning' ? 'exclamation-circle text-warning' : 
-                                                       'info-circle text-info'} me-2 mt-1"></i>
-                                    <div>
-                                        <strong class="text-dark">${n.title}</strong>
-                                        <p class="text-muted small mb-0">${n.message.substring(0, 50)}...</p>
+                            <div class="notification-item d-block text-decoration-none position-relative">
+                                <a href="/notifications/${n.notification_id}/" class="stretched-link text-decoration-none">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-${n.priority === 'danger' ? 'exclamation-triangle text-danger' : n.priority === 'warning' ? 'exclamation-circle text-warning' : 'info-circle text-info'} me-2 mt-1"></i>
+                                        <div>
+                                            <strong class="text-dark">${n.title}</strong>
+                                            <p class="text-muted small mb-0">${n.message.substring(0, 50)}...</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
+                                </a>
+                                <button type="button" class="btn-close position-absolute top-0 end-0 mt-2 me-2" aria-label="Dismiss" onclick="dismissNotification(${n.notification_id}, this)"></button>
+                            </div>
                         `).join('') + `
                             <div class="text-center p-2 border-top">
                                 <a href="/notifications/" class="text-primary">View all notifications</a>
@@ -633,6 +632,25 @@
         loadNotifications();
         setInterval(loadNotifications, 30000); // Refresh every 30 seconds
         {% endif %}
+        
+        // Dismiss notification handler
+        function dismissNotification(notificationId, el) {
+            fetch(`/api/notifications/${notificationId}/dismiss/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            }).then(() => {
+                // Remove the notification from the dropdown
+                if (el && el.closest('.notification-item')) {
+                    el.closest('.notification-item').remove();
+                }
+                // Optionally reload notifications
+                loadNotifications();
+            });
+        }
     </script>
     
     {% block extra_js %}{% endblock %}
