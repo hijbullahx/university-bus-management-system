@@ -340,42 +340,53 @@ def schedule_list(request):
     """Display schedules organized by route type: Shuttle, Metro, Long Road
     Only shows routes that have active bus assignments."""
     from buses.models import BusAssignment
-    
+    from locations.models import DriverLocation
+
     # Get active bus assignments
     assignments = BusAssignment.objects.filter(is_active=True).select_related('bus', 'driver', 'route')
-    
+
     # Build assignment map and get route IDs that have assignments
     assignment_map = {}
     assigned_route_ids = set()
+    driver_ids = set()
     for assignment in assignments:
         assigned_route_ids.add(assignment.route_id)
         if assignment.route_id not in assignment_map:
             assignment_map[assignment.route_id] = []
         assignment_map[assignment.route_id].append(assignment)
-    
+        if assignment.driver:
+            driver_ids.add(assignment.driver.id)
+
+    # Get live status for all assigned drivers
+    driver_live_status = {}
+    if driver_ids:
+        for loc in DriverLocation.objects.filter(driver_id__in=driver_ids):
+            driver_live_status[loc.driver_id] = loc.is_active
+
     # Only get routes that have active bus assignments
     shuttle_routes = Route.objects.filter(
         route_type='shuttle', is_active=True, is_published=True,
         id__in=assigned_route_ids
     ).prefetch_related('trips', 'stops')
-    
+
     metro_routes = Route.objects.filter(
         route_type='metro', is_active=True, is_published=True,
         id__in=assigned_route_ids
     ).prefetch_related('trips', 'stops')
-    
+
     long_routes = Route.objects.filter(
         route_type='long', is_active=True, is_published=True,
         id__in=assigned_route_ids
     ).prefetch_related('stops')
-    
+
     context = {
         'shuttle_routes': shuttle_routes,
         'metro_routes': metro_routes,
         'long_routes': long_routes,
         'assignment_map': assignment_map,
+        'driver_live_status': driver_live_status,
     }
-    
+
     return render(request, 'schedules/schedule_list.html', context)
 
 
